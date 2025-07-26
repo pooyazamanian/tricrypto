@@ -6,7 +6,6 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun WalletPage(
-    padding: PaddingValues,
     navigation: NavHostController
 ){
 

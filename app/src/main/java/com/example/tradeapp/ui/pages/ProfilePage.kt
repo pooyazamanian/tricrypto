@@ -6,7 +6,6 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun ProfilePage(
-    padding: PaddingValues,
     navigation: NavHostController
 ) {
 }

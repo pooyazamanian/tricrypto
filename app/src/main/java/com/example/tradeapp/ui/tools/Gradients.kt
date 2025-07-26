@@ -16,15 +16,17 @@ fun Gradient() {
             .fillMaxWidth()
             .fillMaxHeight()
             .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.secondary,
-                        MaterialTheme.colorScheme.background,
-//                        MaterialTheme.colorScheme.background,
-//                        MaterialTheme.colorScheme.background
-                    )
-                )
+                getBrushGradient()
             )
     )
 }
+
+
+@Composable
+fun getBrushGradient() : Brush = Brush.verticalGradient(
+    colors = listOf(
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.secondary,
+        MaterialTheme.colorScheme.inverseSurface,
+    )
+)

@@ -15,7 +15,6 @@ import com.example.tradeapp.utils.NamePage
 @Composable
 fun MainPageNavigation(
     navigator: NavHostController,
-    paddingValues: PaddingValues,
 ) {
     NavHost(
         navController = navigator,
@@ -30,7 +29,7 @@ fun MainPageNavigation(
             }
             HomePage(
                 navigation = navigator,
-                padding = paddingValues,
+
             )
         }
         composable(
@@ -42,7 +41,6 @@ fun MainPageNavigation(
             }
             WalletPage(
                 navigation = navigator,
-                padding = paddingValues,
             )
         }
         composable(
@@ -54,7 +52,6 @@ fun MainPageNavigation(
             }
             ProfilePage(
                 navigation = navigator,
-                padding = paddingValues,
             )
         }
         composable(
@@ -66,7 +63,6 @@ fun MainPageNavigation(
             }
             TradePage(
                 navigation = navigator,
-                padding = paddingValues,
             )
         }
 
@@ -78,8 +74,7 @@ fun MainPageNavigation(
                 println("HomePage Loaded!")
             }
             TopUpPage(
-                navigation = navigator,
-                padding = paddingValues,
+                navigation = navigator
             )
         }
 

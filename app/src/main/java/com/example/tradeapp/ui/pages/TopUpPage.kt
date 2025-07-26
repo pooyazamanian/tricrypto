@@ -6,7 +6,6 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun TopUpPage(
-    padding: PaddingValues,
     navigation: NavHostController
 ){
 

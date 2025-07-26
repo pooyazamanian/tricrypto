@@ -105,6 +105,7 @@ fun TopBar(
 //    return animationScale == 0f
 //}
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun BottomBar(
     mainNavController: NavHostController
@@ -240,7 +241,7 @@ fun BottomBar(
                         text = item.title,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (mainNavController.currentDestination?.route == item.rout) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (mainNavController.currentDestination?.route == item.rout) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.inverseSurface
                     )
                 }
 
