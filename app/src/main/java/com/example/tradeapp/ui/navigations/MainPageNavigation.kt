@@ -1,10 +1,11 @@
 package com.example.tradeapp.ui.navigations
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
+import com.example.tradeapp.ui.pages.FinalPaymentPage
 import com.example.tradeapp.ui.pages.HomePage
+import com.example.tradeapp.ui.pages.PaymentPage
 import com.example.tradeapp.ui.pages.ProfilePage
 import com.example.tradeapp.ui.pages.TopUpPage
 import com.example.tradeapp.ui.pages.TradePage
@@ -24,9 +25,6 @@ fun MainPageNavigation(
             NamePage.HOME, deepLinks = listOf(
             )
         ) {
-            LaunchedEffect(Unit) {
-                println("HomePage Loaded!")
-            }
             HomePage(
                 navigation = navigator,
 
@@ -36,9 +34,6 @@ fun MainPageNavigation(
             NamePage.WALLET, deepLinks = listOf(
             )
         ) {
-            LaunchedEffect(Unit) {
-                println("HomePage Loaded!")
-            }
             WalletPage(
                 navigation = navigator,
             )
@@ -47,9 +42,6 @@ fun MainPageNavigation(
             NamePage.PROFILE, deepLinks = listOf(
             )
         ) {
-            LaunchedEffect(Unit) {
-                println("HomePage Loaded!")
-            }
             ProfilePage(
                 navigation = navigator,
             )
@@ -58,11 +50,18 @@ fun MainPageNavigation(
             NamePage.TRADE, deepLinks = listOf(
             )
         ) {
-            LaunchedEffect(Unit) {
-                println("HomePage Loaded!")
-            }
+
             TradePage(
                 navigation = navigator,
+            )
+        }
+
+        composable(
+            NamePage.TOP_UP, deepLinks = listOf(
+            )
+        ) {
+            TopUpPage(
+                navigation = navigator
             )
         }
 
@@ -70,12 +69,15 @@ fun MainPageNavigation(
             NamePage.PAYMENT, deepLinks = listOf(
             )
         ) {
-            LaunchedEffect(Unit) {
-                println("HomePage Loaded!")
-            }
-            TopUpPage(
-                navigation = navigator
+            PaymentPage(navigator)
+        }
+
+
+        composable(
+            NamePage.FINAL_PAYMENT, deepLinks = listOf(
             )
+        ) {
+            FinalPaymentPage(navigator)
         }
 
     }

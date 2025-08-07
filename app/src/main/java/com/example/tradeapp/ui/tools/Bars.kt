@@ -145,10 +145,10 @@ fun BottomBar(
             title = "Top Up",
             unSelectedIcon =R.drawable.plus_uns,
             SelectedIcon =R.drawable.plus_s,
-            rout = NamePage.PAYMENT,
+            rout = NamePage.TOP_UP,
             onClick = {
-                mainNavController.navigate(NamePage.PAYMENT) {
-                    popUpTo(NamePage.PAYMENT) {
+                mainNavController.navigate(NamePage.TOP_UP) {
+                    popUpTo(NamePage.TOP_UP) {
                         inclusive = true
                     }
                 }

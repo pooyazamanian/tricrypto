@@ -14,4 +14,7 @@ object NamePage {
     const val CHART = "chart"
     const val TRADE = "trade"
     const val PAYMENT = "payment"
+    const val FINAL_PAYMENT = "final payment"
+    const val TOP_UP = "top up"
+
 }

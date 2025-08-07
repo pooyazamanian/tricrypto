@@ -8,17 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import com.example.tradeapp.R
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,12 +31,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.Image
-import org.w3c.dom.Text
 
 
 @Composable
@@ -78,11 +74,12 @@ fun BaseButton(
 
 @Composable
 fun OutLineImportantButton(
+    modifier: Modifier,
     text: String,
     color: Color
     ) {
     BaseButton(
-        Modifier
+        modifier
             .border(1.dp, color, RoundedCornerShape(10.dp)),
         onclick = {},
         //we need to set 0.dp to remove shadow for get alpha color
@@ -110,10 +107,65 @@ fun OutLineImportantButton(
 }
 
 @Composable
-fun MainImportantButton(
+fun OutLineImportantWithImageButton(
+    modifier: Modifier,
     text: String,
+    color: Color,
+    image: Int,
+    onclick: () -> Unit,
+    endCart: @Composable (() -> Unit)
 ) {
-    BaseButton(Modifier, onclick = {}) {
+    BaseButton(
+        modifier
+            .border(1.dp, color, RoundedCornerShape(10.dp)),
+        onclick = {onclick()},
+        //we need to set 0.dp to remove shadow for get alpha color
+        elevation = 0.dp,
+        color = color.copy(alpha = 0.2f)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+
+                Icon(
+                    painter = painterResource(image),
+                    modifier = Modifier.size(50.dp),
+                    tint = MaterialTheme.colorScheme.surfaceTint,
+                    contentDescription = "image"
+                )
+                Text(
+                    text = text,
+                    color = MaterialTheme.colorScheme.background,
+                    fontSize = 16.sp,
+                    maxLines = 2,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            endCart()
+
+
+        }
+    }
+}
+
+@Composable
+fun MainImportantButton(
+    modifier: Modifier,
+    text: String,
+    onclick: () -> Unit
+) {
+    BaseButton(modifier, onclick = {
+        onclick()
+    }) {
         Row(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
@@ -123,6 +175,7 @@ fun MainImportantButton(
                 text = text,
                 color = MaterialTheme.colorScheme.background,
                 fontSize = 16.sp,
+                minLines = 1,
                 maxLines = 2,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,

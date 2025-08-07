@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,14 +44,20 @@ import com.example.tradeapp.R
 fun BaseCard(
     buttonColor: Color = Color.Transparent,
     borderColor: Color = MaterialTheme.colorScheme.background.copy(alpha = 0.3f),
-
+    enableClickable: Boolean = true,
     onclick: () -> Unit,
     liveContent: @Composable () -> Unit
 ) {
     Column(
         modifier = Modifier
-            .clickable {
-                onclick()
+            .let {
+                if (enableClickable) {
+                    it.clickable {
+                        onclick()
+                    }
+                } else {
+                    it
+                }
             }
             .clip(RoundedCornerShape(5.dp))
             .wrapContentHeight()
@@ -82,7 +89,7 @@ fun MainCoinCard() {
     BaseCard(
         buttonColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
         onclick = {},
-        borderColor =  MaterialTheme.colorScheme.primary,
+        borderColor = MaterialTheme.colorScheme.primary,
         liveContent = {
             Column(
                 modifier = Modifier.padding(start = 10.dp, end = 10.dp)
@@ -150,6 +157,27 @@ fun MainCoinCard() {
     )
 }
 
+@Composable
+fun MainCard(
+    content: @Composable() () -> Unit
+) {
+    BaseCard(
+        buttonColor = MaterialTheme.colorScheme.background.copy(alpha = 0.08f),
+        onclick = {},
+        enableClickable = false,
+        borderColor = MaterialTheme.colorScheme.primary,
+        liveContent = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp)
+            ) {
+                content()
+            }
+        }
+    )
+}
+
 
 @Preview
 @Composable
@@ -179,7 +207,7 @@ fun OtherCoinCard() {
                         Text(
                             text = "NFLX",
                             color = MaterialTheme.colorScheme.background,
-                        fontSize = 13.sp,
+                            fontSize = 13.sp,
                             maxLines = 2,
                             fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
@@ -272,7 +300,7 @@ fun StateCard() {
                     Text(
                         text = "+50 (+3.23%)",
                         color = MaterialTheme.colorScheme.surfaceTint,
-                    fontSize = 13.sp,
+                        fontSize = 13.sp,
                         maxLines = 2,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center,
