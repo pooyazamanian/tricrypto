@@ -151,14 +151,14 @@ fun HomePage(
                     color = Color.White,
                     modifier = Modifier.width(screenWidthDp / 2),
                     image = R.drawable.cardsend
-                )
+                ){}
                 Spacer(Modifier.width(5.dp))
                 MainImportantIconButton(
                     text = "پرداخت",
                     color = Color.White,
                     modifier = Modifier.width(screenWidthDp / 2),
                     image = R.drawable.cardreceive
-                )
+                ){}
             }
             Spacer(Modifier.height(25.dp))
             Text(

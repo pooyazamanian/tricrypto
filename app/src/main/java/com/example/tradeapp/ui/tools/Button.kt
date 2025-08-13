@@ -161,9 +161,12 @@ fun OutLineImportantWithImageButton(
 fun MainImportantButton(
     modifier: Modifier,
     text: String,
+    containerColor: Color =MaterialTheme.colorScheme.tertiary,
+    color: Color = MaterialTheme.colorScheme.background,
+    elevation: Dp = 10.dp,
     onclick: () -> Unit
 ) {
-    BaseButton(modifier, onclick = {
+    BaseButton(modifier, elevation = elevation, color = containerColor, onclick = {
         onclick()
     }) {
         Row(
@@ -173,7 +176,7 @@ fun MainImportantButton(
         ) {
             Text(
                 text = text,
-                color = MaterialTheme.colorScheme.background,
+                color = color,
                 fontSize = 16.sp,
                 minLines = 1,
                 maxLines = 2,
@@ -193,9 +196,10 @@ fun MainImportantIconButton(
     text: String,
     image: Int,
     color: Color = MaterialTheme.colorScheme.background,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onclick: () -> Unit
 ) {
-    BaseButton(modifier, onclick = {}) {
+    BaseButton(modifier, onclick = {onclick()}) {
         Row(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,

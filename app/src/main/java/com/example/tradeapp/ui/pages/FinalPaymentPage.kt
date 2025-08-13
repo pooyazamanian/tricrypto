@@ -27,6 +27,7 @@ import com.example.tradeapp.R
 import androidx.navigation.NavHostController
 import com.example.tradeapp.ui.tools.MainCard
 import com.example.tradeapp.ui.tools.MainImportantButton
+import com.example.tradeapp.ui.tools.RowContent
 import com.example.tradeapp.utils.NamePage
 
 @Composable
@@ -207,37 +208,3 @@ fun ContentOfPayment() {
 }
 
 
-@Composable
-private fun RowContent(title: String, content: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = title,
-            color = MaterialTheme.colorScheme.background,
-            fontSize = 13.sp,
-            maxLines = 2,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Text(
-            text = content,
-            color = MaterialTheme.colorScheme.background,
-            fontSize = 10.sp,
-            maxLines = 2,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-            overflow = TextOverflow.Ellipsis
-        )
-
-    }
-
-}

@@ -3,9 +3,11 @@ package com.example.tradeapp.ui.navigations
 import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
+import com.example.tradeapp.ui.pages.ChartPage
 import com.example.tradeapp.ui.pages.FinalPaymentPage
 import com.example.tradeapp.ui.pages.HomePage
 import com.example.tradeapp.ui.pages.PaymentPage
+import com.example.tradeapp.ui.pages.ProfileEditorPage
 import com.example.tradeapp.ui.pages.ProfilePage
 import com.example.tradeapp.ui.pages.TopUpPage
 import com.example.tradeapp.ui.pages.TradePage
@@ -30,19 +32,21 @@ fun MainPageNavigation(
 
             )
         }
-        composable(
-            NamePage.WALLET, deepLinks = listOf(
-            )
-        ) {
-            WalletPage(
-                navigation = navigator,
-            )
-        }
+
         composable(
             NamePage.PROFILE, deepLinks = listOf(
             )
         ) {
             ProfilePage(
+                navigation = navigator,
+            )
+        }
+
+        composable(
+            NamePage.PROFILE_EDITOR, deepLinks = listOf(
+            )
+        ) {
+            ProfileEditorPage(
                 navigation = navigator,
             )
         }
@@ -80,5 +84,27 @@ fun MainPageNavigation(
             FinalPaymentPage(navigator)
         }
 
+
+//        composable(
+//            NamePage.CHART, deepLinks = listOf(
+//            )
+//        ) {
+//            ChartPage(navigator)
+//        }
+//        composable(
+//            NamePage.WALLET, deepLinks = listOf(
+//            )
+//        ) {
+//            WalletPage(
+//                navigation = navigator,
+//            )
+//        }
+
+        composable(
+            NamePage.WALLET, deepLinks = listOf(
+            )
+        ) {
+            WalletPage(navigator)
+        }
     }
 }

@@ -6,6 +6,7 @@ object NamePage {
     const val BASE_PAGE = "basePage"
     const val HOME = "home"
     const val PROFILE = "profile"
+    const val PROFILE_EDITOR = "profile editor"
     const val SPLASHSCREEN = "SplashScreen"
     const val LOGIN_FIRST = "login first"
     const val LOGIN_COMPLETE = "login complete"

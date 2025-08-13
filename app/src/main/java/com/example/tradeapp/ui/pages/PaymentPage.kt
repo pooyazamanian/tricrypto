@@ -1,5 +1,6 @@
 package com.example.tradeapp.ui.pages
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +36,7 @@ import com.example.tradeapp.ui.tools.OutLineImportantButton
 import com.example.tradeapp.ui.tools.OutLineImportantWithImageButton
 import com.example.tradeapp.utils.NamePage
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun PaymentPage(
     navigation: NavHostController

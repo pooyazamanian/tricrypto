@@ -23,7 +23,6 @@ import com.example.tradeapp.ui.navigations.BaseNav
 import com.example.tradeapp.ui.pages.LoginPage
 import com.example.tradeapp.ui.theme.TradeAppTheme
 import com.example.tradeapp.ui.tools.Gradient
-import com.example.tradeapp.ui.tools.charts.GoldPricesChart
 import com.example.tradeapp.ui.tools.charts.JetpackComposeGoldPrices
 import dagger.hilt.android.AndroidEntryPoint
 
