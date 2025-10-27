@@ -6,24 +6,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tradeapp.damin.database.SecureStorage
-import com.example.tradeapp.damin.repository.AuthenticationRepository
 import com.example.tradeapp.damin.repository.AuthenticationRepositoryImpl
 import com.example.tradeapp.ui.tools.TableName
 import com.example.tradeapp.utils.NamePage
 import com.example.tradeapp.utils.sealedClasses.AuthResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
-import io.github.jan.supabase.auth.status.SessionSource
-import io.github.jan.supabase.auth.status.SessionStatus
-import io.github.jan.supabase.createSupabaseClient
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.jsonPrimitive
 import java.security.MessageDigest
 import java.util.UUID
 import javax.inject.Inject
@@ -49,7 +42,8 @@ class LoginViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val session = supabase.auth.currentSessionOrNull()
-            state.value = if (session != null && secureStorage.getString(TableName.AUTH_TOKEN) != null) {
+
+            state.value = if (session != null) {
                 NamePage.BASE_PAGE
             } else {
                 NamePage.LOGIN
@@ -59,7 +53,7 @@ class LoginViewModel @Inject constructor(
 
     fun signUpWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
         try {
-            val user = supabase.auth.signUpWith(Email) {
+            val user = supabase.auth.signInWith(Email) {
                 email = emailValue
                 password = passwordValue
             }
@@ -95,23 +89,20 @@ class LoginViewModel @Inject constructor(
 //                }
 //            }
             Log.d("auth", user.toString())
-            if(user != null){
-                val session = supabase.auth.currentSessionOrNull()
-                Log.d("auth", session.toString())
-                if (session != null) {
-                    secureStorage.saveString(TableName.AUTH_TOKEN,session.accessToken)
-                    secureStorage.saveString(TableName.REFRESH_TOKEN,session.refreshToken)
-                } else {
-                    // Handle email confirmation case, e.g., emit a different response
-                    emit(AuthResponse.Error("Email confirmation required. Check your email."))
-                    return@flow
-                }
-            }else{
+            val session = supabase.auth.currentSessionOrNull()
+            Log.d("auth", session.toString())
+            if (session != null) {
+//                    secureStorage.saveString(TableName.AUTH_TOKEN,session.accessToken)
+//                    secureStorage.saveString(TableName.REFRESH_TOKEN,session.refreshToken)
+                Log.d("auth"," state.value = NamePage.BASE_PAGE")
+                state.value = NamePage.BASE_PAGE
+            } else {
                 // Handle email confirmation case, e.g., emit a different response
                 emit(AuthResponse.Error("Email confirmation required. Check your email."))
                 return@flow
             }
             emit(AuthResponse.Success)
+            state.value = NamePage.BASE_PAGE
         } catch (e: Exception) {
             Log.e("auth", e.localizedMessage.toString())
 

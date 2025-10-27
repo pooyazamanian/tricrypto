@@ -1,33 +1,29 @@
 package com.example.tradeapp.ui
 
 import android.annotation.*
-import androidx.activity.compose.*
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.*
-import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.res.*
 import androidx.compose.ui.unit.*
-import androidx.navigation.*
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
 import com.example.tradeapp.ui.navigations.MainPageNavigation
 import com.example.tradeapp.ui.tools.BottomBar
-import com.example.tradeapp.ui.tools.Gradient
 import com.example.tradeapp.ui.tools.TopBar
-import com.example.tradeapp.utils.NamePage
-import kotlinx.coroutines.*
-import kotlin.plus
+import com.example.tradeapp.ui.tools.TradeCryptoBottomSheet
+import com.example.tradeapp.viewmodel.TradeViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint(
     "UnusedMaterial3ScaffoldPaddingParameter",
     "UseOfNonLambdaOffsetOverload",
@@ -35,7 +31,10 @@ import kotlin.plus
 )
 @Composable
 fun BasePage(
+    viewModel: TradeViewModel = hiltViewModel()
 ) {
+
+
     val mainNavController = rememberNavController()
 //    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
@@ -48,7 +47,7 @@ fun BasePage(
 //        navigation = mainNavController
 //    ){
     val scrollState = rememberScrollState()
-
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
 
     val hasScrolled = remember {
@@ -56,7 +55,22 @@ fun BasePage(
     }
         Scaffold(modifier = Modifier.fillMaxSize(),
             contentColor = Color.Transparent,
-            containerColor = Color.Transparent, topBar = {
+            containerColor = Color.Transparent,
+            floatingActionButton = {
+                FloatingActionButton(onClick = {
+                    scope.launch {
+                        sheetState.show()
+                    }
+
+                }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add"
+                    )
+                }
+            },
+            topBar = {
             // استخراج route فعلی
             Crossfade(
                 targetState = true, label = "TopBarFade"
@@ -103,6 +117,13 @@ fun BasePage(
                     }
                 }
             }) { padding ->
+
+            if (sheetState.isVisible) {
+                TradeCryptoBottomSheet(
+                    isSheetVisible = sheetState,
+                    viewModel = viewModel
+                )
+            }
             Column(
                 modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize().verticalScroll(scrollState)
             ) {

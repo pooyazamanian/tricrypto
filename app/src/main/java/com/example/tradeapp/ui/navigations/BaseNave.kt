@@ -45,7 +45,6 @@ fun BaseNav(
                 SplashPage(loginViewModel)
             }
             NamePage.LOGIN -> {
-
                 LoginNavigation()
             }
             NamePage.BASE_PAGE -> {

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tradeapp.ui.theme.darkGray
 import com.example.tradeapp.ui.tools.Gradient
+import com.example.tradeapp.utils.NamePage
 import com.example.tradeapp.utils.sealedClasses.AuthResponse
 import com.example.tradeapp.viewmodel.LoginViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -165,7 +166,7 @@ fun LoginPage(
                     loginViewModel.signUpWithEmail(emailValue, passwordValue)
                         .onEach { result ->
                             if (result is AuthResponse.Success) {
-                                Log.d("auth", "Email Success")
+                                loginViewModel.state.value = NamePage.BASE_PAGE
                             } else {
                                 Log.e("auth", "Email Failed")
                             }
