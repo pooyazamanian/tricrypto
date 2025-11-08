@@ -22,6 +22,7 @@ import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Text
 import com.example.tradeapp.damin.model.HistoryData
 import com.example.tradeapp.viewmodel.ChartViewModel
+import com.example.tradeapp.viewmodel.TimeRange
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
@@ -48,9 +49,9 @@ import java.util.TimeZone
 import kotlin.math.ceil
 import kotlin.math.floor
 
-// ثابت‌ها
+
 private const val MS_IN_H = 3600_000 // میلی‌ثانیه در یک ساعت
-private const val Y_STEP = 100.0 // گام محور Y (قابل تنظیم بر اساس داده‌ها)
+private const val Y_STEP = 100.0 // گام محور Y
 
 // فرمت‌کننده محور X
 val BottomAxisValueFormatter = object : CartesianValueFormatter {
@@ -64,11 +65,24 @@ val BottomAxisValueFormatter = object : CartesianValueFormatter {
         verticalAxisPosition: Axis.Position.Vertical?,
     ) = dateFormat.format(Date((value * MS_IN_H).toLong()))
 }
+
 internal val StartAxisValueFormatter = CartesianValueFormatter.decimal(DecimalFormat("$#,###"))
+
 internal val MarkerValueFormatter =
     DefaultCartesianMarker.ValueFormatter.default(DecimalFormat("$#,###.00"))
 
 internal val StartAxisItemPlacer = VerticalAxis.ItemPlacer.step({ Y_STEP })
+
+// RangeProvider داینامیک
+
+
+
+
+
+
+
+
+// فرمت‌کننده محور X
 @Composable
 private fun JetpackComposeGoldPrices(
     modelProducer: CartesianChartModelProducer,
@@ -120,6 +134,7 @@ fun rememberRangeProvider(selectedTimeRange: TimeRange): CartesianLayerRangeProv
         }
     }
 }
+
 @Composable
 private fun JetpackComposeGoldPrices(
     modelProducer: CartesianChartModelProducer,
@@ -146,48 +161,91 @@ private fun JetpackComposeGoldPrices(
     )
 }
 // تعریف بازه‌های زمانی
-enum class TimeRange(val hours: Long) {
-    ONE_DAY(24), // ۱ روز
-    ONE_DAY_BEFORE(24), // ۱ روز قبل
-    FIVE_DAYS(5 * 24), // ۵ روز
-    ONE_MONTH(30 * 24), // ۱ ماه
-    FIVE_MONTHS(5 * 30 * 24), // ۵ ماه
-    ONE_YEAR(365 * 24), // ۱ سال
-    ALL(Long.MAX_VALUE) // نمایش همه داده‌ها
-}
 // کامپوزابل اصلی با دکمه‌ها
-@Composable
-fun JetpackComposeGoldPrices(
-    modifier: Modifier = Modifier,
-    viewModel: ChartViewModel = hiltViewModel(),
-) {
-    var selectedTimeRange by remember { mutableStateOf(TimeRange.ALL) }
-    val modelProducer = remember { CartesianChartModelProducer() }
+//@Composable
+//fun JetpackComposeGoldPrices(
+//    modifier: Modifier = Modifier,
+//    viewModel: ChartViewModel = hiltViewModel(),
+//) {
+//    var selectedTimeRange by remember { mutableStateOf(TimeRange.ALL) }
+//    val modelProducer = remember { CartesianChartModelProducer() }
+//
+//    // لود داده‌ها
+//    LaunchedEffect(Unit) {
+//        viewModel.fetchChartData().collectLatest { data ->
+//            if (data.s == "ok") {
+//                modelProducer.runTransaction {
+//                    candlestickSeries(
+//                        x = data.t.map { it.toDouble() },
+//                        opening = data.o,
+//                        closing = data.c,
+//                        low = data.l,
+//                        high = data.h
+//                    )
+//                }
+//            }
+//            delay(6000) // به‌روزرسانی هر ۶۰ ثانیه
+//        }
+//    }
+//
+//    // رابط کاربری
+//    Column(modifier = modifier) {
+//        // نمودار
+//        JetpackComposeGoldPrices(modelProducer, selectedTimeRange, Modifier.fillMaxWidth())
+//    }
+//}
 
-    // لود داده‌ها
-    LaunchedEffect(Unit) {
-        viewModel.fetchChartData().collectLatest { data ->
-            if (data.s == "ok") {
-                modelProducer.runTransaction {
-                    candlestickSeries(
-                        x = data.t.map { it.toDouble() },
-                        opening = data.o,
-                        closing = data.c,
-                        low = data.l,
-                        high = data.h
-                    )
-                }
-            }
-            delay(6000) // به‌روزرسانی هر ۶۰ ثانیه
-        }
-    }
 
-    // رابط کاربری
-    Column(modifier = modifier) {
-        // نمودار
-        JetpackComposeGoldPrices(modelProducer, selectedTimeRange, Modifier.fillMaxWidth())
-    }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 val RangeProvider = object : CartesianLayerRangeProvider {
     override fun getMinX(minX: Double, maxX: Double, extraStore: ExtraStore): Double {
         // استفاده از حداقل مقدار X از داده‌ها
@@ -214,7 +272,69 @@ val RangeProvider = object : CartesianLayerRangeProvider {
 
 
 
+// CandlestickChartView.kt
 
+@Composable
+fun CandlestickChartView(
+    modelProducer: CartesianChartModelProducer,
+    selectedTimeRange: TimeRange,
+    modifier: Modifier = Modifier,
+) {
+    CartesianChartHost(
+        rememberCartesianChart(
+            rememberCandlestickCartesianLayer(
+                rangeProvider = rememberDynamicRangeProvider(selectedTimeRange)
+            ),
+            startAxis = VerticalAxis.rememberStart(
+                valueFormatter = StartAxisValueFormatter,
+                itemPlacer = StartAxisItemPlacer,
+                label = TextComponent().copy(Color.RED)
+            ),
+            bottomAxis = HorizontalAxis.rememberBottom(
+                guideline = null,
+                valueFormatter = BottomAxisValueFormatter,
+                label = TextComponent().copy(Color.RED)
+            ),
+            marker = rememberMarker(
+                valueFormatter = MarkerValueFormatter,
+                showIndicator = false
+            ),
+        ),
+        modelProducer,
+        modifier.height(220.dp),
+    )
+}
+
+// فایل جداگانه برای Formatters و RangeProvider
+// ChartFormatters.kt
+
+
+@Composable
+fun rememberDynamicRangeProvider(selectedTimeRange: TimeRange): CartesianLayerRangeProvider {
+    return remember(selectedTimeRange) {
+        object : CartesianLayerRangeProvider {
+            override fun getMinX(minX: Double, maxX: Double, extraStore: ExtraStore): Double {
+                return when (selectedTimeRange) {
+                    TimeRange.ONE_DAY_BEFORE -> maxX - TimeRange.ONE_DAY.hours
+                    TimeRange.ALL -> minX
+                    else -> maxX - selectedTimeRange.hours.coerceAtMost((maxX - minX).toLong())
+                }
+            }
+
+            override fun getMaxX(minX: Double, maxX: Double, extraStore: ExtraStore): Double {
+                return maxX
+            }
+
+            override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+                return Y_STEP * floor(minY / Y_STEP)
+            }
+
+            override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+                return Y_STEP * ceil(maxY / Y_STEP)
+            }
+        }
+    }
+}
 
 
 

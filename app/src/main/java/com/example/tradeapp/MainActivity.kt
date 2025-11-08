@@ -16,14 +16,11 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
-import androidx.wear.compose.material.MaterialTheme
+import androidx.navigation.compose.rememberNavController
 import androidx.wear.compose.material.Scaffold
-import com.example.tradeapp.ui.BasePage
-import com.example.tradeapp.ui.navigations.BaseNav
-import com.example.tradeapp.ui.pages.LoginPage
+import com.example.tradeapp.ui.pages.ChartPage
 import com.example.tradeapp.ui.theme.TradeAppTheme
 import com.example.tradeapp.ui.tools.Gradient
-import com.example.tradeapp.ui.tools.charts.JetpackComposeGoldPrices
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -46,7 +43,10 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .background(Color.Transparent)
                     ) {
-                        BaseNav()
+//                        BaseNav()
+
+
+                        ChartPage(navigation = rememberNavController(),"6dfbff52-894d-4c24-b129-34a73dafe1a0")
                     }
                 }
             }

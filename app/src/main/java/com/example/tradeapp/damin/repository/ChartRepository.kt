@@ -11,10 +11,12 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -122,7 +124,7 @@ class ChartRepository @Inject constructor(
         }
     }
 
-    suspend fun fetchHistory(symbol: String, resolution: String, from: Long, to: Long)  = flow {
+    suspend fun fetchHistory(symbol: String, resolution: String, from: Long, to: Long): Result<HistoryData> = withContext(Dispatchers.IO) {
         try {
             val response: HistoryData = client.get("https://dashboard-api.tgju.org/v1/tv2/history") {
                 parameter("symbol", symbol)
@@ -131,23 +133,11 @@ class ChartRepository @Inject constructor(
                 parameter("to", to)
             }.body()
 
-            emit(response)
-//            _historyData.value = _historyData.value + response
-
+            Result.Success(response)
         } catch (e: Exception) {
-            Log.e("error in fetchHistory" , e.message.toString())
-            emit(HistoryData(
-                o = emptyList(),
-                c = emptyList(),
-                h = emptyList(),
-                l = emptyList(),
-                t = emptyList(),
-                v = emptyList(),
-                s = e.message.toString()
-            ))
+            Result.Error(e)
         }
     }
-
 
     fun closeWebSocket() {
         state.value = false

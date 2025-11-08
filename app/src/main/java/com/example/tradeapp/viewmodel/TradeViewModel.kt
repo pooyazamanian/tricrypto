@@ -29,8 +29,10 @@ import javax.inject.Inject
 @HiltViewModel
 class TradeViewModel @Inject constructor(
     private val repository: TradeRepository,
-    private val supabase: SupabaseClient
-) : ViewModel() {
+    private val supabase: SupabaseClient,
+    private val chartRepository: ChartRepository
+) : ViewModel()
+{
 
     private val _state = MutableStateFlow(TradeState())
     val state: StateFlow<TradeState> = _state.asStateFlow()
@@ -53,7 +55,7 @@ class TradeViewModel @Inject constructor(
             is TradeIntent.LoadAssets -> loadAssets()
             is TradeIntent.LoadUserAssets -> loadUserAssets()
             is TradeIntent.LoadOrders -> loadOrders()
-            is TradeIntent.LoadProfile -> loadProfile()
+            is TradeIntent.LoadProfile -> loadProfile()//remove
             is TradeIntent.LoadTradesForAsset -> loadTradesForAsset(intent.assetId)
             is TradeIntent.CreateOrder -> createOrder(intent.order)
             is TradeIntent.UpdateOrderStatus -> updateOrderStatus(intent.orderId, intent.status)
