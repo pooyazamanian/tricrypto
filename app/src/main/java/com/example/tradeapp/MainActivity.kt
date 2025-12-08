@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import androidx.wear.compose.material.Scaffold
+import com.example.tradeapp.ui.navigations.BaseNav
 import com.example.tradeapp.ui.pages.ChartPage
 import com.example.tradeapp.ui.theme.TradeAppTheme
 import com.example.tradeapp.ui.tools.Gradient
@@ -43,10 +44,10 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .background(Color.Transparent)
                     ) {
-//                        BaseNav()
+                        BaseNav()
 
 
-                        ChartPage(navigation = rememberNavController(),"6dfbff52-894d-4c24-b129-34a73dafe1a0")
+//                        ChartPage(navigation = rememberNavController(),"6dfbff52-894d-4c24-b129-34a73dafe1a0")
                     }
                 }
             }

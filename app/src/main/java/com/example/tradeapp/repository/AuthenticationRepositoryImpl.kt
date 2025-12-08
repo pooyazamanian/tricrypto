@@ -1,10 +1,10 @@
-package com.example.tradeapp.damin.repository
+package com.example.tradeapp.repository
 
+import com.example.tradeapp.damin.repository.AuthenticationRepository
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import javax.inject.Inject
 import javax.inject.Singleton
-
 
 @Singleton
 class AuthenticationRepositoryImpl @Inject constructor(

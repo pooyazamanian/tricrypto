@@ -24,3 +24,22 @@ fun SimpleTextFiled(text: MutableState<String>,modifier: Modifier) {
         label = { Text("Enter Your Name") }
     )
 }
+
+
+@Composable
+fun SimpleTextFiled(text: String,modifier: Modifier,enable: Boolean = true, onValueChange:(String) -> Unit) {
+    OutlinedTextField(
+        value = text ,
+        modifier = modifier, colors = OutlinedTextFieldDefaults.colors().copy(
+            unfocusedContainerColor = Color.White.copy(alpha = 0.15f),
+            unfocusedLabelColor = Color.White,
+            unfocusedIndicatorColor = Color.White
+        ),
+        enabled = enable,
+        shape = RoundedCornerShape(15.dp),
+        onValueChange = {
+            onValueChange.invoke(it)
+        },
+        label = { Text("Enter Your Name") }
+    )
+}

@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tradeapp.damin.database.SecureStorage
-import com.example.tradeapp.damin.repository.AuthenticationRepositoryImpl
+import com.example.tradeapp.repository.AuthenticationRepositoryImpl
 import com.example.tradeapp.ui.tools.TableName
 import com.example.tradeapp.utils.NamePage
 import com.example.tradeapp.utils.sealedClasses.AuthResponse

@@ -1,8 +1,10 @@
 package com.example.tradeapp.ui.navigations
 
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
+import com.example.tradeapp.damin.model.Profile
 import com.example.tradeapp.ui.pages.ChartPage
 import com.example.tradeapp.ui.pages.FinalPaymentPage
 import com.example.tradeapp.ui.pages.HomePage
@@ -13,6 +15,9 @@ import com.example.tradeapp.ui.pages.TopUpPage
 import com.example.tradeapp.ui.pages.TradePage
 import com.example.tradeapp.ui.pages.WalletPage
 import com.example.tradeapp.utils.NamePage
+import io.github.jan.supabase.auth.user.UserInfo
+import kotlinx.serialization.json.Json
+import java.nio.charset.StandardCharsets
 
 
 @Composable
@@ -30,7 +35,7 @@ fun MainPageNavigation(
             HomePage(
                 navigation = navigator,
 
-            )
+                )
         }
 
         composable(
@@ -38,16 +43,26 @@ fun MainPageNavigation(
             )
         ) {
             ProfilePage(
-                navigation = navigator,
+                navigation = navigator
             )
         }
 
         composable(
-            NamePage.PROFILE_EDITOR, deepLinks = listOf(
-            )
-        ) {
+            "${NamePage.PROFILE_EDITOR}/{profileJson}/{userJson}",
+            arguments = listOf(
+                navArgument("profileJson") { type = NavType.StringType },
+                navArgument("userJson") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val profileEncoded = backStackEntry.arguments?.getString("profileJson")
+            val profileJson = java.net.URLDecoder.decode(profileEncoded, StandardCharsets.UTF_8.toString())
+            val profile = Json.decodeFromString<Profile>(profileJson)
+            val userEncoded = backStackEntry.arguments?.getString("userJson")
+            val userJson = java.net.URLDecoder.decode(userEncoded, StandardCharsets.UTF_8.toString())
+            val user = Json.decodeFromString<UserInfo>(userJson)
             ProfileEditorPage(
                 navigation = navigator,
+                user = user,
+                profile = profile
             )
         }
         composable(

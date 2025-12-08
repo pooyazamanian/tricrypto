@@ -1,9 +1,9 @@
-package com.example.tradeapp.damin.repository
+package com.example.tradeapp.repository
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.example.tradeapp.damin.model.HistoryData
 import com.example.tradeapp.damin.model.MarketData
+import com.example.tradeapp.damin.util.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.websocket.webSocket
@@ -24,7 +24,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
-
 
 @Singleton
 class ChartRepository @Inject constructor(
@@ -61,18 +60,19 @@ class ChartRepository @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                emit( MarketData(
-                    cryptoId = "error",
-                    cryptoName = "error",
-                    livePrice = null,
-                    maxPrice = null,
-                    minPrice = null,
-                    avgPrice = null,
-                    volume = null,
-                    rate = null,
-                    state = "error",
-                    timestamp = java.time.LocalDateTime.now().toString()
-                )
+                emit(
+                    MarketData(
+                        cryptoId = "error",
+                        cryptoName = "error",
+                        livePrice = null,
+                        maxPrice = null,
+                        minPrice = null,
+                        avgPrice = null,
+                        volume = null,
+                        rate = null,
+                        state = "error",
+                        timestamp = LocalDateTime.now().toString()
+                    )
                 )
                 delay(5000) // تأخیر 5 ثانیه قبل از اتصال مجدد
             }
@@ -83,7 +83,7 @@ class ChartRepository @Inject constructor(
         message: String
     ) {
         try {
-            val json = Json.parseToJsonElement(message).jsonObject
+            val json = Json.Default.parseToJsonElement(message).jsonObject
             val dataArray =
                 json["result"]?.jsonObject?.get("data")?.jsonObject?.get("data")?.jsonArray ?: return
 
@@ -124,20 +124,22 @@ class ChartRepository @Inject constructor(
         }
     }
 
-    suspend fun fetchHistory(symbol: String, resolution: String, from: Long, to: Long): Result<HistoryData> = withContext(Dispatchers.IO) {
-        try {
-            val response: HistoryData = client.get("https://dashboard-api.tgju.org/v1/tv2/history") {
-                parameter("symbol", symbol)
-                parameter("resolution", resolution)
-                parameter("from", from)
-                parameter("to", to)
-            }.body()
+    suspend fun fetchHistory(symbol: String, resolution: String, from: Long, to: Long): Result<HistoryData> =
+        withContext(Dispatchers.IO) {
+            try {
+                val response: HistoryData =
+                    client.get("https://dashboard-api.tgju.org/v1/tv2/history") {
+                        parameter("symbol", symbol)
+                        parameter("resolution", resolution)
+                        parameter("from", from)
+                        parameter("to", to)
+                    }.body()
 
-            Result.Success(response)
-        } catch (e: Exception) {
-            Result.Error(e)
+                Result.Success(response)
+            } catch (e: Exception) {
+                Result.Error(e)
+            }
         }
-    }
 
     fun closeWebSocket() {
         state.value = false

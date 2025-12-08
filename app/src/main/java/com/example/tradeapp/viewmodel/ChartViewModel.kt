@@ -3,10 +3,10 @@ package com.example.tradeapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tradeapp.damin.model.HistoryData
-import com.example.tradeapp.damin.repository.ChartRepository
-import com.example.tradeapp.damin.repository.TradeRepository
+import com.example.tradeapp.repository.ChartRepository
+import com.example.tradeapp.repository.TradeRepositoryImp
 import com.example.tradeapp.viewmodel.intent.ChartIntent
-import com.example.tradeapp.viewmodel.intent.TradeType
+import com.example.tradeapp.viewmodel.state.TradeType
 import com.example.tradeapp.viewmodel.state.ChartState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -20,7 +20,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.tradeapp.damin.repository.Result
+import com.example.tradeapp.damin.util.Result
+import com.example.tradeapp.usecase.GetAssetsUseCase
 import com.example.tradeapp.viewmodel.state.KeyStats
 import com.example.tradeapp.viewmodel.state.PriceInfo
 
@@ -43,7 +44,7 @@ enum class TimeRange(val hours: Long, val label: String, val resolution: String)
 @HiltViewModel
 class ChartViewModel @Inject constructor(
     private val chartRepository: ChartRepository,
-    private val tradeRepository: TradeRepository
+    private val getAssetsUseCase: GetAssetsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ChartState())
@@ -71,13 +72,11 @@ class ChartViewModel @Inject constructor(
     private fun loadAssetInfo(assetId: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-
             try {
-                when (val result = tradeRepository.getAssets()) {
+                when (val result = getAssetsUseCase()) {
                     is Result.Success -> {
                         // پیدا کردن Asset مورد نظر با ID
                         val selectedAsset = result.data.find { it.id == assetId }
-
                         if (selectedAsset != null) {
                             _state.update { it.copy(asset = selectedAsset) }
 

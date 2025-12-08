@@ -7,6 +7,7 @@ plugins {
     id("kotlinx-serialization")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("kotlin-parcelize") // همینی که لازم داری
 }
 
 android {
