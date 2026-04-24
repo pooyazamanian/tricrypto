@@ -18,7 +18,7 @@ class SupabaseClientWrapper
     // ---------- Generic GET ----------
     suspend fun get(
         table: String,
-        columns: Columns = Columns.Companion.ALL,       // مثال: "*,profile(*)"
+        columns: Columns = Columns.ALL,       // مثال: "*,profile(*)"
         filter: Map<String, Any> = emptyMap()
     ): PostgrestResult {
         return db.from(table).select(columns) {

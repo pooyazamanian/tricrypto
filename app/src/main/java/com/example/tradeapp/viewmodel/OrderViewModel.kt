@@ -77,7 +77,7 @@ class OrderViewModel @Inject constructor(
         viewModelScope.launch {
             userId?.let { id ->
                 _state.update { it.copy(isLoading = true) }
-                when (val result = createOrderUseCase(order)) {
+                when (val result = createOrderUseCase(order.copy(userId = id.toString() ))) {
                     is Result.Success -> {
                         _state.update { it.copy(isLoading = false) }
                         _effect.send(OrderEffect.ShowSuccess("سفارش با موفقیت ثبت شد"))

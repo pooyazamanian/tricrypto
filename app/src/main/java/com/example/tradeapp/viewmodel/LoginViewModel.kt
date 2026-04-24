@@ -24,7 +24,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authenticationRepository: AuthenticationRepositoryImpl,
     private val supabase: SupabaseClient,
     private val secureStorage: SecureStorage
 ) :ViewModel(){
@@ -121,7 +120,6 @@ class LoginViewModel @Inject constructor(
             if (session != null) {
                 secureStorage.saveString(TableName.AUTH_TOKEN,session.accessToken)
                 secureStorage.saveString(TableName.REFRESH_TOKEN,session.refreshToken)
-
             } else {
                 // Handle email confirmation case, e.g., emit a different response
                 emit(AuthResponse.Error("Email confirmation required. Check your email."))

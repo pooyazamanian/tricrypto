@@ -6,5 +6,7 @@ import java.util.UUID
 
 interface TradeRepository {
     suspend fun getTradesForAsset(assetId: UUID, limit: Int = 50): Result<List<Trade>>
+    suspend fun getTrades(limit: Int = 50): Result<List<Trade>>
+
     suspend fun createTrade(trade: Trade): Result<List<Trade>>
 }

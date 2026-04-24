@@ -20,9 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Clear
@@ -71,24 +73,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.tradeapp.damin.model.Asset
 import com.example.tradeapp.damin.model.Order
+import com.example.tradeapp.damin.model.UserAsset
+import com.example.tradeapp.viewmodel.AssetViewModel
+import com.example.tradeapp.viewmodel.OrderViewModel
 import com.example.tradeapp.viewmodel.TradeViewModel
+import com.example.tradeapp.viewmodel.UserAssetViewModel
+import com.example.tradeapp.viewmodel.effect.OrderEffect
 import com.example.tradeapp.viewmodel.effect.TradeEffect
+import com.example.tradeapp.viewmodel.intent.OrderIntent
 import com.example.tradeapp.viewmodel.intent.TradeIntent
 import com.example.tradeapp.viewmodel.state.TradeType
 import kotlinx.coroutines.launch
 
 @Composable
-fun NetWorkConnectionDialog( onDismissRequest: () -> Unit = {}) {
+fun NetWorkConnectionDialog(onDismissRequest: () -> Unit = {}) {
     Dialog(onDismissRequest = {
         onDismissRequest()
     }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background (Color.Transparent),
+                .background(Color.Transparent),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -105,12 +114,12 @@ fun NetWorkConnectionDialog( onDismissRequest: () -> Unit = {}) {
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text (
+                Text(
                     text = "اتصال به اینترنت",
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(end = 10.dp, bottom = 10.dp),
-                    textAlign = TextAlign .Right,
+                    textAlign = TextAlign.Right,
                     fontWeight = FontWeight(700),
                     fontSize = 32.sp
                 )
@@ -136,47 +145,84 @@ fun NetWorkConnectionDialog( onDismissRequest: () -> Unit = {}) {
 }
 
 
+@Composable
+fun SuggestedAmountSection(
+    amounts: List<String>,
+    selected: String?,
+    onAmountSelected: (String) -> Unit
+) {
+    Text(
+        text = if (amounts.first().contains("%")) "درصد فروش:" else "مقادیر پیشنهادی:",
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onBackground
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(amounts) { amount ->
+            SuggestedAmountChip(
+                amount = amount,
+                isSelected = selected == amount,
+                onClick = { onAmountSelected(amount) }
+            )
+        }
+    }
+}
 
 
-
-@SuppressLint("UnrememberedMutableState")
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnrememberedMutableState", "StateFlowValueCalledInComposition")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TradeCryptoBottomSheet(
     isSheetVisible: SheetState,
-    viewModel: TradeViewModel
+    assetViewModel: AssetViewModel = hiltViewModel(),
+    userAssetViewModel: UserAssetViewModel = hiltViewModel(),
+    orderViewModel: OrderViewModel = hiltViewModel(),
+    tradeViewModel: TradeViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
+    val assetState by assetViewModel.state.collectAsState()
+    val userAssetState by userAssetViewModel.state.collectAsState()
+    val tradeState by tradeViewModel.state.collectAsState()
+
     val scope = rememberCoroutineScope()
 
     var tradeAmount by remember { mutableStateOf(TextFieldValue("")) }
     var tradePrice by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedAsset by remember { mutableStateOf<Asset?>(null) }
-    var isBuyMode by remember { mutableStateOf(true) }
-    var useMarketPrice by remember { mutableStateOf(true) } // true = قیمت لحظه‌ای، false = قیمت دستی
-
-    // قیمت‌های پیشنهادی
-    val suggestedAmounts = remember {
-        if (isBuyMode) {
-            listOf("0.01", "0.05", "0.1", "0.5", "1")
-        } else {
-            listOf("25%", "50%", "75%", "100%")
-        }
-    }
+    var useMarketPrice by remember { mutableStateOf(true) }
     var selectedSuggestedAmount by remember { mutableStateOf<String?>(null) }
 
+    // قیمت لحظه‌ای (برای selected asset)
+    val currentPrice = tradeState.selectedAsset?.let { asset ->
+        // فرض: در آینده از یک PriceFeed استفاده می‌کنی
+        // الان برای تست ثابت داریم
+        25000.0 // باید از TradeRepository.getLatestPrice(asset.id) بگیری
+    } ?: 0.0
+
+    // تابع کمکی برای ریست کردن inputها
+    fun resetInputs() {
+        tradeAmount = TextFieldValue("")
+        tradePrice = TextFieldValue("")
+        selectedSuggestedAmount = null
+        if (useMarketPrice) {
+            tradePrice = TextFieldValue(currentPrice.toString())
+        }
+    }
     // Collect effects
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
+        orderViewModel.effect.collect { effect ->
             when (effect) {
-                is TradeEffect.ShowError -> {
-                    // نمایش پیام خطا
-                }
-                is TradeEffect.ShowSuccess -> {
-                    // نمایش پیام موفقیت
+                is OrderEffect.ShowSuccess -> {
                     scope.launch { isSheetVisible.hide() }
                 }
-                else -> {}
+
+                is OrderEffect.ShowError -> {
+                    // نمایش خطا در UI (مثلاً Toast)
+                }
             }
         }
     }
@@ -184,9 +230,7 @@ fun TradeCryptoBottomSheet(
     ModalBottomSheet(
         modifier = Modifier.wrapContentHeight(),
         sheetState = isSheetVisible,
-        onDismissRequest = {
-            scope.launch { isSheetVisible.hide() }
-        },
+        onDismissRequest = { scope.launch { isSheetVisible.hide() } },
         dragHandle = {
             Row(
                 modifier = Modifier
@@ -200,11 +244,8 @@ fun TradeCryptoBottomSheet(
                     contentDescription = "Close",
                     modifier = Modifier
                         .size(24.dp)
-                        .clickable {
-                            scope.launch { isSheetVisible.hide() }
-                        }
+                        .clickable { scope.launch { isSheetVisible.hide() } }
                 )
-
                 Text(
                     text = "معامله رمزارز",
                     fontSize = 18.sp,
@@ -216,6 +257,7 @@ fun TradeCryptoBottomSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
                 // سوییچ خرید/فروش
@@ -230,438 +272,143 @@ fun TradeCryptoBottomSheet(
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // دکمه خرید
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .background(
-                                if (isBuyMode) MaterialTheme.colorScheme.primary
-                                else Color.Transparent,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .clickable {
-                                isBuyMode = true
-                                selectedSuggestedAmount = null
-                                tradeAmount = TextFieldValue("")
-                                tradePrice = TextFieldValue("")
-                                viewModel.handleIntent(TradeIntent.SetTradeType(TradeType.BUY))
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "خرید",
-                            color = if (isBuyMode) Color.White
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    // دکمه فروش
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .background(
-                                if (!isBuyMode) MaterialTheme.colorScheme.error
-                                else Color.Transparent,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .clickable {
-                                isBuyMode = false
-                                selectedSuggestedAmount = null
-                                tradeAmount = TextFieldValue("")
-                                tradePrice = TextFieldValue("")
-                                viewModel.handleIntent(TradeIntent.SetTradeType(TradeType.SELL))
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "فروش",
-                            color = if (!isBuyMode) Color.White
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    TradeModeButton(
+                        text = "خرید",
+                        isSelected = tradeState.tradeType == TradeType.BUY,
+                        color = MaterialTheme.colorScheme.primary,
+                        onClick = {
+                            tradeViewModel.handleIntent(TradeIntent.SetTradeType(TradeType.BUY))
+                            resetInputs()
+                        }
+                    )
+                    TradeModeButton(
+                        text = "فروش",
+                        isSelected = tradeState.tradeType == TradeType.SELL,
+                        color = MaterialTheme.colorScheme.error,
+                        onClick = {
+                            tradeViewModel.handleIntent(TradeIntent.SetTradeType(TradeType.SELL))
+                            resetInputs()
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // عنوان انتخاب رمزارز
-                Text(
-                    text = if (isBuyMode) "رمزارز مورد نظر برای خرید:"
-                    else "رمزارز مورد نظر برای فروش:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onBackground
+                // نمایش لیست دارایی‌ها
+                AssetSelectionSection(
+                    isBuyMode = tradeState.tradeType == TradeType.BUY,
+                    assets = assetState.assets,
+                    userAssets = userAssetState.userAssets,
+                    selectedAsset = tradeState.selectedAsset,
+                    onAssetSelected = { asset ->
+                        tradeViewModel.handleIntent(TradeIntent.SelectAsset(asset))
+                        if (useMarketPrice) {
+                            tradePrice = TextFieldValue(currentPrice.toString())
+                        }
+                    },
+                    isLoading = assetState.isLoading
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // لیست رمزارزها
-                if (state.isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                } else {
-                    LazyRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // در حالت فروش فقط رمزارزهایی که کاربر دارد نمایش داده می‌شود
-                        val displayAssets = if (!isBuyMode) {
-                            state.assets.filter { asset ->
-                                state.userAssets.any { userAsset ->
-                                    userAsset.assetId == asset.id && (userAsset.quantity ?: 0.0) > 0
-                                }
-                            }
-                        } else {
-                            state.assets
-                        }
-
-                        items(displayAssets) { asset ->
-                            CryptoAssetCard(
-                                asset = asset,
-                                isSelected = selectedAsset?.id == asset.id,
-                                userQuantity = if (!isBuyMode) {
-                                    state.userAssets.find { it.assetId == asset.id }?.quantity ?: 0.0
-                                } else null,
-                                onClick = {
-                                    selectedAsset = asset
-                                    // اگر قیمت لحظه‌ای انتخاب شده، قیمت رو آپدیت کن
-                                    if (useMarketPrice) {
-                                        tradePrice = TextFieldValue(state.currentPrice?.toString() ?: "")
-                                    }
-                                    viewModel.handleIntent(TradeIntent.SelectAsset(asset))
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // باکس نمایش قیمت لحظه‌ای و تغییرات
-                selectedAsset?.let { asset ->
+                // نمایش قیمت لحظه‌ای (ساده‌شده)
+                tradeState.selectedAsset?.let { asset ->
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = "قیمت لحظه‌ای ${asset.symbol}",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "$${state.currentPrice ?: "0.00"}",
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-
-                            // باکس تغییرات قیمت
-                            Card(
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if ((state.priceChange ?: 0.0) >= 0)
-                                        Color(0xFF4CAF50).copy(alpha = 0.1f)
-                                    else
-                                        Color(0xFFF44336).copy(alpha = 0.1f)
-                                ),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = if ((state.priceChange ?: 0.0) >= 0)
-                                            Icons.Default.KeyboardArrowUp
-                                        else
-                                            Icons.Default.KeyboardArrowDown,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                        tint = if ((state.priceChange ?: 0.0) >= 0)
-                                            Color(0xFF4CAF50)
-                                        else
-                                            Color(0xFFF44336)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "${state.priceChangePercent ?: "0.0"}%",
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if ((state.priceChange ?: 0.0) >= 0)
-                                            Color(0xFF4CAF50)
-                                        else
-                                            Color(0xFFF44336)
-                                    )
-                                }
-                            }
-                        }
+                    asset.symbol?.let {
+                        CurrentPriceCard(
+                            assetSymbol = it,
+                            currentPrice = currentPrice
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // بخش انتخاب نوع قیمت (لحظه‌ای یا دستی)
-                Text(
-                    text = "نوع قیمت:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // دکمه قیمت لحظه‌ای
-                    FilterChip(
-                        selected = useMarketPrice,
-                        onClick = {
-                            useMarketPrice = true
-                            // قیمت رو به قیمت لحظه‌ای تغییر بده
-                            tradePrice = TextFieldValue(state.currentPrice?.toString() ?: "")
-                        },
-                        label = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("قیمت لحظه‌ای")
-                            }
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
-                        )
-                    )
-
-                    // دکمه قیمت دستی
-                    FilterChip(
-                        selected = !useMarketPrice,
-                        onClick = {
-                            useMarketPrice = false
+                // نوع قیمت
+                PriceTypeSelector(
+                    useMarketPrice = useMarketPrice,
+                    onToggle = { newValue ->
+                        useMarketPrice = newValue
+                        if (newValue) {
+                            tradePrice = TextFieldValue(currentPrice.toString())
+                        } else {
                             tradePrice = TextFieldValue("")
-                        },
-                        label = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Build,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("قیمت دستی")
-                            }
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                            selectedLabelColor = Color.White
-                        )
-                    )
-                }
+                        }
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // ورودی قیمت
-                OutlinedTextField(
-                    value = tradePrice,
-                    onValueChange = {
-                        if (!useMarketPrice) {
-                            tradePrice = it
-                        }
-                    },
-                    label = {
-                        Text(
-                            if (useMarketPrice) "قیمت لحظه‌ای" else "قیمت پیشنهادی شما"
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !useMarketPrice, // فقط در حالت دستی فعال باشد
-                    trailingIcon = {
-                        Row(
-                            modifier = Modifier.padding(end = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "دلار",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            if (!useMarketPrice) {
-                                Spacer(modifier = Modifier.width(8.dp))
-                                // دکمه پاک کردن
-                                IconButton(
-                                    onClick = { tradePrice = TextFieldValue("") },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Clear,
-                                        contentDescription = "Clear",
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
-                            }
-                        }
-                    },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        disabledBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        disabledTextColor = MaterialTheme.colorScheme.onSurface
-                    )
+                PriceInputField(
+                    tradePrice = tradePrice,
+                    onValueChange = { if (!useMarketPrice) tradePrice = it },
+                    useMarketPrice = useMarketPrice,
+                    currentPrice = currentPrice
                 )
 
-                // نمایش هشدار در صورت اختلاف قیمت
-                if (!useMarketPrice && tradePrice.text.isNotEmpty() && selectedAsset != null) {
-                    val customPrice = tradePrice.text.toDoubleOrNull() ?: 0.0
-                    val marketPrice = state.currentPrice ?: 0.0
-                    val priceDifference = ((customPrice - marketPrice) / marketPrice * 100)
-
-                    if (kotlin.math.abs(priceDifference) > 5) { // اگر بیش از 5% اختلاف داشت
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFFF3E0)
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Warning,
-                                    contentDescription = null,
-                                    tint = Color(0xFFFF9800),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = if (priceDifference > 0)
-                                        "قیمت شما ${kotlin.math.abs(priceDifference).toInt()}% بالاتر از نرخ بازار است"
-                                    else
-                                        "قیمت شما ${kotlin.math.abs(priceDifference).toInt()}% پایین‌تر از نرخ بازار است",
-                                    fontSize = 12.sp,
-                                    color = Color(0xFFE65100)
-                                )
-                            }
-                        }
-                    }
-                }
+                // هشدار اختلاف قیمت (اختیاری)
+                PriceDifferenceWarning(
+                    useMarketPrice = useMarketPrice,
+                    customPriceText = tradePrice.text,
+                    marketPrice = currentPrice
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // مقادیر پیشنهادی
-                Text(
-                    text = if (isBuyMode) "مقادیر پیشنهادی:" else "درصد فروش:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(suggestedAmounts) { amount ->
-                        SuggestedAmountChip(
-                            amount = amount,
-                            isSelected = selectedSuggestedAmount == amount,
-                            onClick = {
-                                selectedSuggestedAmount = amount
-
-                                // محاسبه مقدار بر اساس انتخاب
-                                if (!isBuyMode && selectedAsset != null) {
-                                    val userAsset = state.userAssets.find { it.assetId == selectedAsset?.id }
-                                    userAsset?.quantity?.let { quantity ->
-                                        val percentage = amount.removeSuffix("%").toDoubleOrNull() ?: 0.0
-                                        val calculatedAmount = (quantity * percentage) / 100
-                                        tradeAmount = TextFieldValue(calculatedAmount.toString())
-                                    }
-                                } else if (isBuyMode) {
-                                    tradeAmount = TextFieldValue(amount)
-                                }
-                            }
-                        )
-                    }
+                val suggestedAmounts = if (tradeState.tradeType == TradeType.BUY) {
+                    listOf("0.01", "0.05", "0.1", "0.5", "1")
+                } else {
+                    listOf("25%", "50%", "75%", "100%")
                 }
+
+                SuggestedAmountSection(
+                    amounts = suggestedAmounts,
+                    selected = selectedSuggestedAmount,
+                    onAmountSelected = { amount ->
+                        selectedSuggestedAmount = amount
+                        if (tradeState.tradeType == TradeType.SELL && tradeState.selectedAsset != null) {
+                            val userAsset =
+                                userAssetState.userAssets.find { it.assetId == tradeState.selectedAsset!!.id }
+                            userAsset?.quantity?.let { qty ->
+                                val percent = amount.trim('%').toDoubleOrNull() ?: 0.0
+                                val calc = (qty * percent) / 100
+                                tradeAmount = TextFieldValue("%.6f".format(calc))
+                            }
+                        } else {
+                            tradeAmount = TextFieldValue(amount)
+                        }
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // ورودی مقدار
-                Text(
-                    text = if (isBuyMode) "مقدار خرید:" else "مقدار فروش:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = tradeAmount,
+                AmountInputField(
+                    tradeAmount = tradeAmount,
                     onValueChange = {
                         tradeAmount = it
-                        selectedSuggestedAmount = null // پاک کردن انتخاب هنگام تایپ دستی
+                        selectedSuggestedAmount = null
                     },
-                    label = { Text("مقدار") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        Text(
-                            text = selectedAsset?.symbol ?: "واحد",
-                            modifier = Modifier.padding(end = 8.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    singleLine = true
+                    assetSymbol = tradeState.selectedAsset?.symbol ?: "واحد"
                 )
 
                 // نمایش موجودی در حالت فروش
-                if (!isBuyMode && selectedAsset != null) {
-                    val userAsset = state.userAssets.find { it.assetId == selectedAsset?.id }
-                    userAsset?.quantity?.let { quantity ->
+                if (tradeState.tradeType == TradeType.SELL && tradeState.selectedAsset != null) {
+                    val userAsset =
+                        userAssetState.userAssets.find { it.assetId == tradeState.selectedAsset!!.id }
+                    userAsset?.quantity?.let { qty ->
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "موجودی شما:",
+                                "موجودی شما:",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "$quantity ${selectedAsset?.symbol}",
+                                "$qty ${tradeState.selectedAsset!!.symbol}",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -670,137 +417,435 @@ fun TradeCryptoBottomSheet(
                     }
                 }
 
-                // نمایش ارزش تقریبی معامله
-                if (tradeAmount.text.isNotEmpty() && tradePrice.text.isNotEmpty() && selectedAsset != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "ارزش کل معامله:",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                val totalValue = (tradeAmount.text.toDoubleOrNull() ?: 0.0) *
-                                        (tradePrice.text.toDoubleOrNull() ?: 0.0)
-                                Text(
-                                    text = "$${"%.2f".format(totalValue)}",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-
-                            if (!useMarketPrice) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "قیمت هر واحد:",
-                                        fontSize = 11.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = "$${tradePrice.text}",
-                                        fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                // ارزش کل معامله
+                TotalValuePreview(
+                    amountText = tradeAmount.text,
+                    priceText = tradePrice.text
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // دکمه تأیید
-                Button(
+                TradeActionButton(
+                    isBuyMode = tradeState.tradeType == TradeType.BUY,
+                    useMarketPrice = useMarketPrice,
+                    isLoading = orderViewModel.state.value.isLoading,
+                    enabled = tradeState.selectedAsset != null &&
+                            (tradeAmount.text.toDoubleOrNull() ?: 0.0) > 0 &&
+                            (tradePrice.text.toDoubleOrNull() ?: 0.0) > 0,
                     onClick = {
-                        selectedAsset?.let { asset ->
+                        tradeState.selectedAsset?.let { asset ->
                             val amount = tradeAmount.text.toDoubleOrNull() ?: 0.0
                             val price = tradePrice.text.toDoubleOrNull() ?: 0.0
-
                             if (amount > 0 && price > 0) {
-                                if (isBuyMode) {
-                                    // ایجاد سفارش خرید
-                                    val order = Order(
-                                        userId = viewModel.userId.toString(),
-                                        assetId = asset.id,
-                                        orderType = "BUY",
-                                        quantity = amount,
-                                        price = price,
-                                        status = "PENDING"
-                                    )
-                                    viewModel.handleIntent(TradeIntent.CreateOrder(order))
-                                } else {
-                                    // بررسی موجودی و ایجاد سفارش فروش
-                                    val userAsset = state.userAssets.find { it.assetId == asset.id }
-                                    if (userAsset != null && (userAsset.quantity ?: 0.0) >= amount) {
-                                        val order = Order(
-                                            userId = viewModel.userId.toString(),
-                                            assetId = asset.id,
-                                            orderType = "SELL",
-                                            quantity = amount,
-                                            price = price,
-                                            status = "PENDING"
-                                        )
-                                        viewModel.handleIntent(TradeIntent.CreateOrder(order))
+                                if (tradeState.tradeType == TradeType.SELL) {
+                                    val userAsset =
+                                        userAssetState.userAssets.find { it.assetId == asset.id }
+                                    if (userAsset == null || (userAsset.quantity
+                                            ?: 0.0) < amount
+                                    ) {
+                                        // نمایش خطا: موجودی کافی نیست
+                                        return@TradeActionButton
                                     }
                                 }
+                                val order = Order(
+                                    userId = null ,
+                                    assetId = asset.id,
+                                    orderType = if (tradeState.tradeType == TradeType.BUY) "BUY" else "SELL",
+                                    quantity = amount,
+                                    price = price,
+                                    status = "PENDING"
+                                )
+                                orderViewModel.handleIntent(OrderIntent.CreateOrder(order))
                             }
                         }
-                    },
+                    }
+                )
+            }
+        }
+    )
+
+
+}
+
+@Composable
+fun TradeActionButton(
+    isBuyMode: Boolean,
+    useMarketPrice: Boolean,
+    isLoading: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        enabled = enabled && !isLoading,
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isBuyMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+        )
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                color = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+        } else {
+            Text(
+                text = when {
+                    isBuyMode && !useMarketPrice -> "ثبت سفارش خرید"
+                    isBuyMode && useMarketPrice -> "خرید فوری"
+                    !isBuyMode && !useMarketPrice -> "ثبت سفارش فروش"
+                    else -> "فروش فوری"
+                },
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun PriceDifferenceWarning(
+    useMarketPrice: Boolean,
+    customPriceText: String,
+    marketPrice: Double
+) {
+    if (!useMarketPrice && customPriceText.isNotEmpty()) {
+        val customPrice = customPriceText.toDoubleOrNull() ?: 0.0
+        val priceDifference = if (marketPrice != 0.0) {
+            ((customPrice - marketPrice) / marketPrice * 100)
+        } else 0.0
+
+        if (kotlin.math.abs(priceDifference) > 5) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFFFF3E0)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFFF9800),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (priceDifference > 0)
+                            "قیمت شما ${
+                                kotlin.math.abs(priceDifference).toInt()
+                            }% بالاتر از نرخ بازار است"
+                        else
+                            "قیمت شما ${
+                                kotlin.math.abs(priceDifference).toInt()
+                            }% پایین‌تر از نرخ بازار است",
+                        fontSize = 12.sp,
+                        color = Color(0xFFE65100)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TotalValuePreview(
+    amountText: String,
+    priceText: String
+) {
+    if (amountText.isNotEmpty() && priceText.isNotEmpty()) {
+        val amount = amountText.toDoubleOrNull() ?: 0.0
+        val price = priceText.toDoubleOrNull() ?: 0.0
+        val totalValue = amount * price
+
+        if (totalValue > 0) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
-                    enabled = selectedAsset != null &&
-                            tradeAmount.text.isNotEmpty() &&
-                            tradePrice.text.isNotEmpty(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isBuyMode)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.error
-                    )
+                        .padding(12.dp)
                 ) {
-                    if (state.isLoading) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         Text(
-                            text = when {
-                                isBuyMode && !useMarketPrice -> "ثبت سفارش خرید"
-                                isBuyMode && useMarketPrice -> "خرید فوری"
-                                !isBuyMode && !useMarketPrice -> "ثبت سفارش فروش"
-                                else -> "فروش فوری"
-                            },
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "ارزش کل معامله:",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "$${"%.2f".format(totalValue)}",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun AmountInputField(
+    tradeAmount: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    assetSymbol: String
+) {
+    Text(
+        text = "مقدار:",
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onBackground
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    OutlinedTextField(
+        value = tradeAmount,
+        onValueChange = onValueChange,
+        label = { Text("مقدار") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        modifier = Modifier.fillMaxWidth(),
+        trailingIcon = {
+            Text(
+                text = assetSymbol,
+                modifier = Modifier.padding(end = 8.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        singleLine = true
     )
 }
+
+@Composable
+fun PriceInputField(
+    tradePrice: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    useMarketPrice: Boolean,
+    currentPrice: Double
+) {
+    OutlinedTextField(
+        value = if (useMarketPrice) TextFieldValue(currentPrice.toString()) else tradePrice,
+        onValueChange = {
+            if (!useMarketPrice) {
+                onValueChange(it)
+            }
+        },
+        label = {
+            Text(if (useMarketPrice) "قیمت لحظه‌ای" else "قیمت پیشنهادی شما")
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = Modifier.fillMaxWidth(),
+        enabled = !useMarketPrice,
+        trailingIcon = {
+            Row(
+                modifier = Modifier.padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "دلار",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (!useMarketPrice) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        onClick = { onValueChange(TextFieldValue("")) },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+        },
+        singleLine = true,
+        colors = OutlinedTextFieldDefaults.colors(
+            disabledBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+            disabledTextColor = MaterialTheme.colorScheme.onSurface
+        )
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PriceTypeSelector(
+    useMarketPrice: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Text(
+        text = "نوع قیمت:",
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onBackground
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterChip(
+            selected = useMarketPrice,
+            onClick = { onToggle(true) },
+            label = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("قیمت لحظه‌ای")
+                }
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedLabelColor = Color.White
+            )
+        )
+
+        FilterChip(
+            selected = !useMarketPrice,
+            onClick = { onToggle(false) },
+            label = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Build,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("قیمت دستی")
+                }
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                selectedLabelColor = Color.White
+            )
+        )
+    }
+}
+// 🔹 کامپوننت‌های کوچک (برای خوانایی بیشتر)
+
+@Composable
+private fun TradeModeButton(text: String, isSelected: Boolean, color: Color, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+
+            .fillMaxHeight()
+            .background(if (isSelected) color else Color.Transparent, RoundedCornerShape(8.dp))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun AssetSelectionSection(
+    isBuyMode: Boolean,
+    assets: List<Asset>,
+    userAssets: List<UserAsset>,
+    selectedAsset: Asset?,
+    onAssetSelected: (Asset) -> Unit,
+    isLoading: Boolean
+) {
+    Text(
+        text = if (isBuyMode) "رمزارز مورد نظر برای خرید:" else "رمزارز مورد نظر برای فروش:",
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        val displayAssets = if (isBuyMode) {
+            assets
+        } else {
+            assets.filter { asset ->
+                userAssets.any { userAsset ->
+                    userAsset.assetId == asset.id && (userAsset.quantity ?: 0.0) > 0
+                }
+            }
+        }
+
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(displayAssets) { asset ->
+                val userQty = if (!isBuyMode) userAssets.find { it.assetId == asset.id }?.quantity
+                    ?: 0.0 else null
+                CryptoAssetCard(
+                    asset = asset,
+                    isSelected = selectedAsset?.id == asset.id,
+                    userQuantity = userQty,
+                    onClick = { onAssetSelected(asset) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CurrentPriceCard(assetSymbol: String, currentPrice: Double) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    "قیمت لحظه‌ای $assetSymbol",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("$${currentPrice}", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+            // ساده‌شده — بدون تغییرات درصدی
+        }
+    }
+}
+
+// ... سایر کامپوننت‌ها مثل PriceTypeSelector, PriceInputField, TotalValuePreview, TradeActionButton
+// (برای کوتاهی حذف شدن — ولی همین منطق رو دنبال کن)
 
 // کامپوننت Chip برای مقادیر پیشنهادی
 @Composable
@@ -825,6 +870,7 @@ fun SuggestedAmountChip(
         )
     )
 }
+
 // کامپوننت کارت رمزارز
 @Composable
 fun CryptoAssetCard(

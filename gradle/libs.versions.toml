@@ -6,9 +6,8 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxSerializationJson = "1.8.1"
-ktorClientCio = "3.2.0"
-ktorClientCore = "3.2.0"
-ktorClientWebsockets = "3.2.0"
+
+ktorClient = "3.2.0"
 lifecycleRuntimeKtx = "2.9.1"
 activityCompose = "1.10.1"
 #composeBom = "2024.09.00"
@@ -55,14 +54,14 @@ coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coilCompose" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidCompiler" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClientCio" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCore" }
-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorClientCore" }
-ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktorClientWebsockets" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClient" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClient" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorClient" }
+ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktorClient" }
 postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
 
 realtime-kt = { module = "io.github.jan-tennert.supabase:realtime-kt" }
-ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClientCore" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClient" }
 vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
 

@@ -22,6 +22,7 @@ import com.example.tradeapp.ui.tools.TopBar
 import com.example.tradeapp.ui.tools.TradeCryptoBottomSheet
 import com.example.tradeapp.viewmodel.TradeViewModel
 import kotlinx.coroutines.launch
+import okhttp3.internal.userAgent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint(
@@ -120,8 +121,7 @@ fun BasePage(
 
             if (sheetState.isVisible) {
                 TradeCryptoBottomSheet(
-                    isSheetVisible = sheetState,
-                    viewModel = viewModel
+                    isSheetVisible = sheetState
                 )
             }
             Column(

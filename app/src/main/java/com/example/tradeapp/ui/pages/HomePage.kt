@@ -189,7 +189,7 @@ fun HomePage(
                 overflow = TextOverflow.Ellipsis
             )
             for (i in 1..10){
-                StateBoxCard()
+//                StateBoxCard()
             }
 //        Button() { }
         }

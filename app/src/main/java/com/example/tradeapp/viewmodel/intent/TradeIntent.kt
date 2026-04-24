@@ -10,5 +10,8 @@ sealed interface TradeIntent {
     data class SelectAsset(val asset: Asset) : TradeIntent
     data class SetTradeType(val type: TradeType) : TradeIntent
     data class LoadTradesForAsset(val assetId: String) : TradeIntent
+    object LoadTrades : TradeIntent
+
     data class CreateTrade(val trade: Trade) : TradeIntent
+    object ClearTrades: TradeIntent
 }

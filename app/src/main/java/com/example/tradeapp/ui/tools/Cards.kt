@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -349,9 +350,12 @@ fun StateCard() {
 }
 
 
-@Preview
 @Composable
-fun StateBoxCard() {
+fun StateBoxCard(
+    nameCoin:String,
+    count: String,
+    percent: MutableState<String>
+) {
 
     Row(
         modifier = Modifier
@@ -373,7 +377,7 @@ fun StateBoxCard() {
             Spacer(Modifier.width(10.dp))
             Column {
                 Text(
-                    text = "BBRI",
+                    text = nameCoin,
                     color = MaterialTheme.colorScheme.background,
                     fontSize = 16.sp,
                     maxLines = 2,
@@ -404,7 +408,7 @@ fun StateBoxCard() {
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        text = "8600",
+                        text = count,
                         color = MaterialTheme.colorScheme.background,
                         fontSize = 15.sp,
                         maxLines = 2,
@@ -415,7 +419,7 @@ fun StateBoxCard() {
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        text = "+50 (+3.23%)",
+                        text = "(${percent.value}%)",
                         color = MaterialTheme.colorScheme.surfaceTint,
                         fontSize = 11.sp,
                         maxLines = 2,
@@ -429,8 +433,90 @@ fun StateBoxCard() {
         }
 
     }
+}
 
+@Composable
+fun StateBoxCard(
+    nameCoin:String,
+    count: String,
+    price: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(R.drawable.test),
+                contentDescription = "service",
+                modifier = Modifier.size(20.dp),
+                contentScale = ContentScale.FillBounds
+            )
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text(
+                    text = nameCoin,
+                    color = MaterialTheme.colorScheme.background,
+                    fontSize = 16.sp,
+                    maxLines = 2,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = "Bank Rakyat Indonesia",
+                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
+                    fontSize = 11.sp,
+                    maxLines = 2,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        Row {
+            Row(
+                modifier = Modifier
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = count,
+                        color = MaterialTheme.colorScheme.background,
+                        fontSize = 15.sp,
+                        maxLines = 2,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "$price $",
+                        color = MaterialTheme.colorScheme.surfaceTint,
+                        fontSize = 11.sp,
+                        maxLines = 2,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
 
+    }
 }
 
 

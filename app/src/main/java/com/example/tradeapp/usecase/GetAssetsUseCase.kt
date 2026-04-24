@@ -4,7 +4,9 @@ import com.example.tradeapp.damin.model.Asset
 import com.example.tradeapp.damin.repository.AssetRepository
 import com.example.tradeapp.damin.util.Result
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class GetAssetsUseCase @Inject constructor(
     private val repository: AssetRepository
 ) {

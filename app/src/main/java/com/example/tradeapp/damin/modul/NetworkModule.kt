@@ -93,7 +93,7 @@ object NetworkModule {
                 requestTimeout = NETWORK_TIMEOUT
             }
 
-            // 🔹 Optional: automatic retry for unstable servers
+             //🔹 Optional: automatic retry for unstable servers
             install(HttpRequestRetry) {
                 retryOnException(maxRetries = 3)
                 exponentialDelay()

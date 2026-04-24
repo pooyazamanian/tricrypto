@@ -31,7 +31,6 @@ class UserAssetViewModel @Inject constructor(
 
     private val _effect = Channel<UserAssetEffect>()
     val effect = _effect.receiveAsFlow()
-
     private val userId: UUID? by lazy {
         supabase.auth.currentSessionOrNull()?.user?.id?.let { UUID.fromString(it) }
     }
