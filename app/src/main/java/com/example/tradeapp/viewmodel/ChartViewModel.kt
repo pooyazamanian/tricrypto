@@ -2,9 +2,8 @@ package com.example.tradeapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tradeapp.damin.model.HistoryData
+import com.example.tradeapp.dto.HistoryData
 import com.example.tradeapp.repository.ChartRepository
-import com.example.tradeapp.repository.TradeRepositoryImp
 import com.example.tradeapp.viewmodel.intent.ChartIntent
 import com.example.tradeapp.viewmodel.state.TradeType
 import com.example.tradeapp.viewmodel.state.ChartState

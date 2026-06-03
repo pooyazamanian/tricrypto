@@ -1,6 +1,6 @@
 package com.example.tradeapp.usecase
 
-import com.example.tradeapp.damin.model.Profile
+import com.example.tradeapp.dto.Profile
 import com.example.tradeapp.damin.util.Result
 import com.example.tradeapp.damin.repository.ProfileRepository
 import javax.inject.Inject

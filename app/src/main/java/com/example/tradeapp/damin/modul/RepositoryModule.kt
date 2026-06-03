@@ -2,15 +2,21 @@ package com.example.tradeapp.damin.modul
 
 import com.example.tradeapp.damin.repository.AssetRepository
 import com.example.tradeapp.damin.repository.AuthenticationRepository
+import com.example.tradeapp.damin.repository.MarketRepository
+import com.example.tradeapp.damin.repository.MarketTrendsRepository
 import com.example.tradeapp.damin.repository.OrderRepository
 import com.example.tradeapp.repository.ProfileRepositoryImp
 import com.example.tradeapp.damin.repository.ProfileRepository
 import com.example.tradeapp.damin.repository.TradeRepository
+import com.example.tradeapp.damin.repository.UserWatchlistRepository
 import com.example.tradeapp.damin.repository.WalletRepository
 import com.example.tradeapp.repository.AssetRepositoryImp
 import com.example.tradeapp.repository.AuthenticationRepositoryImpl
+import com.example.tradeapp.repository.MarketTrendsRepositoryImp
+import com.example.tradeapp.repository.OkxMarketRepository
 import com.example.tradeapp.repository.OrderRepositoryImp
 import com.example.tradeapp.repository.TradeRepositoryImp
+import com.example.tradeapp.repository.UserWatchlistRepositoryImp
 import com.example.tradeapp.repository.WalletRepositoryImp
 import dagger.Binds
 import dagger.Module
@@ -25,6 +31,16 @@ abstract class RepositoryModule {
     abstract fun bindAssetRepository(
         impl: AssetRepositoryImp
     ): AssetRepository
+
+    @Binds
+    abstract fun bindUserWatchlistRepository(
+        impl: UserWatchlistRepositoryImp
+    ): UserWatchlistRepository
+
+    @Binds
+    abstract fun bindMarketTrendsRepository(
+        impl: MarketTrendsRepositoryImp
+    ): MarketTrendsRepository
 
     @Binds
     abstract fun bindAuthenticationRepository(
@@ -50,5 +66,11 @@ abstract class RepositoryModule {
     abstract fun bindWalletRepository(
         impl: WalletRepositoryImp
     ): WalletRepository
+
+    @Binds
+    abstract fun bindOkxMarketRepository(
+        impl: OkxMarketRepository
+    ): MarketRepository
+
 
 }

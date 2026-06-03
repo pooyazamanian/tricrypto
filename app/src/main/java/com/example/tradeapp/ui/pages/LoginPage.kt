@@ -18,6 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,7 +63,7 @@ private fun RegisterHeader() {
 
 @Composable
 fun LoginPage(
-    loginViewModel: LoginViewModel = hiltViewModel()
+    loginViewModel: LoginViewModel
 ) {
     var emailValue by remember{
         mutableStateOf("")
@@ -164,14 +165,14 @@ fun LoginPage(
             Button(
                 onClick = {
                     loginViewModel.signUpWithEmail(emailValue, passwordValue)
-                        .onEach { result ->
-                            if (result is AuthResponse.Success) {
-                                loginViewModel.state.value = NamePage.BASE_PAGE
-                            } else {
-                                Log.e("auth", "Email Failed")
-                            }
-                        }
-                        .launchIn(coroutineScope)
+//                        .onEach { result ->
+//                            if ( result is AuthResponse.Success) {
+//                                loginViewModel.state.value = NamePage.BASE_PAGE
+//                            } else {
+//                                Log.e("auth", "Email Failed")
+//                            }
+//                        }
+//                        .launchIn(coroutineScope)
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White

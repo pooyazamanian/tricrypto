@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -61,16 +59,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
-import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Text
 import coil3.compose.AsyncImage
 import com.example.tradeapp.R
-import com.example.tradeapp.damin.model.Asset
+import com.example.tradeapp.dto.AssetDto
 import com.example.tradeapp.ui.tools.MainCard
 import com.example.tradeapp.ui.tools.RowContent
 import com.example.tradeapp.ui.tools.charts.CandlestickChartView
-import com.example.tradeapp.viewmodel.ChartEffect
 import com.example.tradeapp.viewmodel.ChartViewModel
 import com.example.tradeapp.viewmodel.TimeRange
 import com.example.tradeapp.viewmodel.intent.ChartIntent
@@ -83,7 +78,7 @@ import java.text.DecimalFormat
 
 @Composable
 fun ChartPage(
-    navigation: NavHostController,
+//    navigation: NavHostController,
     assetId: String,
     viewModel: ChartViewModel = hiltViewModel()
 ) {
@@ -169,7 +164,9 @@ fun ChartPage(
         onSellClick = {
             // Navigate
         },
-        onBackClick = { navigation.popBackStack() }
+        onBackClick = {
+//            navigation.popBackStack()
+        }
     )
 }
 @Composable
@@ -293,7 +290,7 @@ private fun TimeRangeButton(
 }
 @Composable
 private fun AssetHeader(
-    asset: Asset?,
+    asset: AssetDto?,
     isLoading: Boolean,
     isRefreshing: Boolean,
     onBackClick: () -> Unit,

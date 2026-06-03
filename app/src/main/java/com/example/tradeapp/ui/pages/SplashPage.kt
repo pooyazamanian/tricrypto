@@ -8,12 +8,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.*
 import com.example.tradeapp.R
 import coil3.gif.*
 import coil3.request.*
 import com.example.tradeapp.ui.tools.Gradient
 import com.example.tradeapp.viewmodel.LoginViewModel
+import com.example.tradeapp.viewmodel.MarketTrendsViewModel
+import com.example.tradeapp.viewmodel.WatchlistViewModel
 import io.github.jan.supabase.auth.auth
 
 @Composable

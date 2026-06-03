@@ -1,5 +1,5 @@
 package com.example.tradeapp.usecase
-import com.example.tradeapp.damin.model.Order
+import com.example.tradeapp.dto.Order
 import com.example.tradeapp.damin.repository.OrderRepository
 import com.example.tradeapp.damin.util.Result
 import javax.inject.Inject

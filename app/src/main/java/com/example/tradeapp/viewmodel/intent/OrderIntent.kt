@@ -1,6 +1,6 @@
 package com.example.tradeapp.viewmodel.intent
 
-import com.example.tradeapp.damin.model.Order
+import com.example.tradeapp.dto.Order
 
 sealed interface OrderIntent {
     object LoadOrders : OrderIntent

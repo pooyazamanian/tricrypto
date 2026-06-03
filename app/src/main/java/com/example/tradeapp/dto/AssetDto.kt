@@ -1,4 +1,4 @@
-package com.example.tradeapp.damin.model
+package com.example.tradeapp.dto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -6,7 +6,7 @@ import kotlinx.serialization.SerialName
 
 
 @Serializable
-data class Asset(
+data class AssetDto(
     @SerialName("id") val id: String? = null,
     @SerialName("name") val name: String? = null,
     @SerialName("symbol") val symbol: String? = null,

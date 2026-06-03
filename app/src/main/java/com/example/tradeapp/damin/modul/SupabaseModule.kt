@@ -17,9 +17,11 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
 import javax.inject.Singleton
 import com.example.tradeapp.R
+import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.websocket.WebSockets
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -29,8 +31,9 @@ object SupabaseModule {
     @Singleton
     fun provideSupabaseClient(@ApplicationContext context: Context): SupabaseClient {
         return createSupabaseClient(
-            supabaseUrl = "https://nvggjweiwyaaswounyey.supabase.co",
-            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52Z2dqd2Vpd3lhYXN3b3VueWV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NDQyODksImV4cCI6MjA2NjMyMDI4OX0.LrC4D7BaCTPmPckMTThSGIk6aLt3jaTT5h2s11FvwmQ"
+            supabaseUrl = "https://cbhmavruzwqimjmrcnki.supabase.co",
+            supabaseKey = "sb_publishable_AQuCy_8AdT0UrZKtAnIFXQ_rQBpL8wc"
+//            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52Z2dqd2Vpd3lhYXN3b3VueWV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NDQyODksImV4cCI6MjA2NjMyMDI4OX0.LrC4D7BaCTPmPckMTThSGIk6aLt3jaTT5h2s11FvwmQ"
 //            supabaseUrl = "https://ouujizpxpwaqgzpqldvo.supabase.co",
 //            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91dWppenB4cHdhcWd6cHFsZHZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDkzMTYsImV4cCI6MjA3NjYyNTMxNn0.eK88dVY-p57Qcj5YkziyZYM8hs_Rz7k9ZrZtlI8wKzA"
 
@@ -46,6 +49,7 @@ object SupabaseModule {
                 host = "supabase.com"
             }
             install(Storage)
+            install(Realtime)
         }
     }
 

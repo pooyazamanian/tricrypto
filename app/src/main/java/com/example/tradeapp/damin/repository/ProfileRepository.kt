@@ -1,6 +1,6 @@
 package com.example.tradeapp.damin.repository
 
-import com.example.tradeapp.damin.model.Profile
+import com.example.tradeapp.dto.Profile
 import io.github.jan.supabase.postgrest.result.PostgrestResult
 import java.util.UUID
 

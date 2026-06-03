@@ -29,52 +29,23 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.tradeapp.ui.model.UiTrade
-import com.example.tradeapp.ui.model.UiUserAsset
 import com.example.tradeapp.ui.tools.OptionButton
 import com.example.tradeapp.ui.tools.StateBoxCard
 import com.example.tradeapp.ui.tools.StateCard
 import com.example.tradeapp.ui.tools.TimeDropdownMenu
-import com.example.tradeapp.viewmodel.AssetViewModel
 import com.example.tradeapp.viewmodel.TradeViewModel
-import com.example.tradeapp.viewmodel.intent.AssetIntent
 import com.example.tradeapp.viewmodel.intent.TradeIntent
 
 @Composable
 fun TradePage(
     navigation: NavHostController,
     tradeViewModel: TradeViewModel = hiltViewModel() ,
-    assetViewModel: AssetViewModel = hiltViewModel()
 ) {
-
     val tradeState by tradeViewModel.state.collectAsState()
-    val assetState by assetViewModel.state.collectAsState()
-    val listTrade = remember { mutableStateListOf<UiTrade>() }
 
     LaunchedEffect(Unit) {
         tradeViewModel.handleIntent(TradeIntent.LoadTrades)
-        assetViewModel.handleIntent(AssetIntent.LoadAssets)
     }
-
-    LaunchedEffect(tradeState.trades, assetState.assets) {
-        if (tradeState.trades.isEmpty() && assetState.assets.isEmpty()) return@LaunchedEffect
-        tradeState.trades.forEach { userAsset ->
-            val selectedAsset = assetState.assets.find { assets ->
-                assets.id == userAsset.assetId
-            }
-            selectedAsset?.let {
-                listTrade.add(
-                    UiTrade(
-                        quantity = userAsset.quantity,
-                        name = it.name,
-                        symbol = it.symbol,
-                        isActive = it.isActive
-                    )
-                )
-            }
-        }
-    }
-
-
     Column(
         Modifier.fillMaxSize()
     ) {
@@ -109,7 +80,7 @@ fun TradePage(
 
 
                 Text(
-                    text = "فهرست پیگیری های من:",
+                    text = "ترید های در لحظه",
                     color = Color.White.copy(alpha = 0.6f),
                     fontSize = 16.sp,
                     maxLines = 2,
@@ -121,8 +92,8 @@ fun TradePage(
 
             }
             Spacer(Modifier.height(10.dp))
-            listTrade.forEach {
-                StateBoxCard(nameCoin =it.name ?: "", count = it.quantity.toString(), price = it.price)
+            tradeState.trades.forEach {
+                StateBoxCard(nameCoin =it.asset?.name ?: "", count = it.quantity.toString(), price = it.price.toString())
             }
 
         }

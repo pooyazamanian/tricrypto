@@ -1,6 +1,6 @@
 package com.example.tradeapp.viewmodel.state
 
-import com.example.tradeapp.damin.model.Order
+import com.example.tradeapp.dto.Order
 
 data class OrderState(
     val isLoading: Boolean = false,

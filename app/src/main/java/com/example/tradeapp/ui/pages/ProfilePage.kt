@@ -106,7 +106,7 @@ fun ProfilePage(
                         .height(1.dp)
                         .background(MaterialTheme.colorScheme.primary)
                 )
-                state.profile?.full_name?.let { RowContent("نام کامل", it) }
+                state.profile?.fullName?.let { RowContent("نام کامل", it) }
             }
         }
         Spacer(Modifier.size(20.dp))
@@ -119,7 +119,7 @@ fun ProfilePage(
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                state.profile?.national_id?.let { RowContent("کد ملی", it) }
+                state.profile?.nationalId?.let { RowContent("کد ملی", it) }
                 Spacer(
                     Modifier
                         .fillMaxWidth()

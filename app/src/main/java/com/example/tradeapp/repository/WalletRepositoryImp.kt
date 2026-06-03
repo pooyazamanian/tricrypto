@@ -1,6 +1,6 @@
 package com.example.tradeapp.repository
 
-import com.example.tradeapp.damin.model.UserAsset
+import com.example.tradeapp.dto.UserAsset
 import com.example.tradeapp.damin.util.Result
 import com.example.tradeapp.damin.api.SupabaseClientWrapper
 import com.example.tradeapp.damin.repository.WalletRepository

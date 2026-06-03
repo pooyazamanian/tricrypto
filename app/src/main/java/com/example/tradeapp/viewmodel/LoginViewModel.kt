@@ -15,6 +15,9 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
@@ -27,8 +30,9 @@ class LoginViewModel @Inject constructor(
     private val supabase: SupabaseClient,
     private val secureStorage: SecureStorage
 ) :ViewModel(){
-    var state = mutableStateOf(NamePage.SPLASHSCREEN)
-//    init {
+    // استفاده از StateFlow به جای mutableStateOf
+    private val _state = MutableStateFlow(NamePage.SPLASHSCREEN)
+    val state: StateFlow<String> = _state.asStateFlow()//    init {
 //        viewModelScope.launch {
 //            // همین‌جا session فعلی رو چک می‌کنیم
 //            val session = supabase.auth.currentSessionOrNull()
@@ -42,7 +46,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             val session = supabase.auth.currentSessionOrNull()
 
-            state.value = if (session != null) {
+            _state.value = if (session != null) {
                 NamePage.BASE_PAGE
             } else {
                 NamePage.LOGIN
@@ -50,65 +54,25 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun signUpWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
-        try {
-            val user = supabase.auth.signInWith(Email) {
-                email = emailValue
-                password = passwordValue
-            }
-//            supabase.auth.sessionStatus.collect {
-//                when(it) {
-//                    is SessionStatus.Authenticated -> {
-//                        println("Received new authenticated session.")
-//                        when(it.source) { //Check the source of the session
-//                            SessionSource.External -> TODO()
-//                            is SessionSource.Refresh -> TODO()
-//                            is SessionSource.SignIn -> TODO()
-//                            is SessionSource.SignUp -> {
-//                                Log.d("auth", "sign up with supabase auth")
-//                            }
-//                            SessionSource.Storage -> TODO()
-//                            SessionSource.Unknown -> TODO()
-//                            is SessionSource.UserChanged -> TODO()
-//                            is SessionSource.UserIdentitiesChanged -> TODO()
-//                            SessionSource.AnonymousSignIn -> TODO()
-//                        }
-//                    }
-//                    SessionStatus.Initializing -> println("Initializing")
-//                    is SessionStatus.RefreshFailure -> {
-//                        println("Session expired and could not be refreshed")
-//                    }
-//                    is SessionStatus.NotAuthenticated -> {
-//                        if(it.isSignOut) {
-//                            println("User signed out")
-//                        } else {
-//                            println("User not signed in")
-//                        }
-//                    }
-//                }
-//            }
-            Log.d("auth", user.toString())
-            val session = supabase.auth.currentSessionOrNull()
-            Log.d("auth", session.toString())
-            if (session != null) {
-//                    secureStorage.saveString(TableName.AUTH_TOKEN,session.accessToken)
-//                    secureStorage.saveString(TableName.REFRESH_TOKEN,session.refreshToken)
-                Log.d("auth"," state.value = NamePage.BASE_PAGE")
-                state.value = NamePage.BASE_PAGE
-            } else {
-                // Handle email confirmation case, e.g., emit a different response
-                emit(AuthResponse.Error("Email confirmation required. Check your email."))
-                return@flow
-            }
-            emit(AuthResponse.Success)
-            state.value = NamePage.BASE_PAGE
-        } catch (e: Exception) {
-            Log.e("auth", e.localizedMessage.toString())
+    fun signUpWithEmail(emailValue: String, passwordValue: String) {
+        viewModelScope.launch {
+            try {
+                // توجه: متد signInWith برای لاگین است، نه ثبت‌نام (signUp)
+                supabase.auth.signInWith(Email) {
+                    email = emailValue
+                    password = passwordValue
+                }
 
-            emit(AuthResponse.Error(e.localizedMessage))
+                // اگر کد به اینجا برسد و Exception ندهد، یعنی لاگین صد درصد موفق بوده است.
+                // نیازی نیست دوباره session را چک کنید، چون گاهی آپدیت شدن آن میلی‌ثانیه‌ای طول می‌کشد.
+                Log.d("auth", "Login Success! Changing state to BASE_PAGE")
+                _state.value = NamePage.BASE_PAGE
+
+            } catch (e: Exception) {
+                Log.e("auth", "Login Failed: ${e.localizedMessage}")
+            }
         }
     }
-
     fun signInWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
         try {
             supabase.auth.signInWith(Email) {
@@ -148,7 +112,7 @@ class LoginViewModel @Inject constructor(
             secureStorage.clearString(TableName.AUTH_TOKEN)
             secureStorage.clearString(TableName.REFRESH_TOKEN)
 
-            state.value = NamePage.LOGIN
+            _state.value = NamePage.LOGIN
         }
     }
 //    private val _email = MutableStateFlow("")

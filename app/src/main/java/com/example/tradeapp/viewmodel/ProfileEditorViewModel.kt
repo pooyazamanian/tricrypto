@@ -3,7 +3,7 @@ package com.example.tradeapp.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tradeapp.damin.model.Profile
+import com.example.tradeapp.dto.Profile
 import com.example.tradeapp.damin.util.Result
 import com.example.tradeapp.usecase.UpsertProfileUseCase
 import com.example.tradeapp.viewmodel.intent.ProfileEditorIntent

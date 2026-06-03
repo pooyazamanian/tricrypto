@@ -1,6 +1,6 @@
 package com.example.tradeapp.repository
 
-import com.example.tradeapp.damin.model.Order
+import com.example.tradeapp.dto.Order
 import com.example.tradeapp.damin.util.Result
 import com.example.tradeapp.damin.api.SupabaseClientWrapper
 import com.example.tradeapp.damin.repository.OrderRepository

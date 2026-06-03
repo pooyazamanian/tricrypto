@@ -1,8 +1,8 @@
 package com.example.tradeapp.repository
 
 import androidx.compose.runtime.mutableStateOf
-import com.example.tradeapp.damin.model.HistoryData
-import com.example.tradeapp.damin.model.MarketData
+import com.example.tradeapp.dto.HistoryData
+import com.example.tradeapp.dto.MarketData
 import com.example.tradeapp.damin.util.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

@@ -24,6 +24,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -37,25 +39,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.tradeapp.ui.tools.MainImportantIconButton
 import java.nio.file.WatchEvent
 import com.example.tradeapp.R
 import com.example.tradeapp.ui.tools.MainCoinCard
 import com.example.tradeapp.ui.tools.StateBoxCard
+import com.example.tradeapp.viewmodel.TradeViewModel
+import com.example.tradeapp.viewmodel.WatchlistViewModel
 
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun HomePage(
-    navigation: NavHostController
+    navigation: NavHostController,
+    watchlistViewModel: WatchlistViewModel = hiltViewModel()
+
 ) {
-
-
+    val watchlistState by watchlistViewModel.state.collectAsState()
     Column(Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier
-            ,
+            modifier = Modifier,
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.End
         ) {
@@ -79,7 +84,6 @@ fun HomePage(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
-
             ) {
                 Text(
                     text = "تومان",
@@ -188,10 +192,9 @@ fun HomePage(
                 textAlign = TextAlign.Center,
                 overflow = TextOverflow.Ellipsis
             )
-            for (i in 1..10){
-//                StateBoxCard()
+            watchlistState.assets.forEach{ index ->
+                StateBoxCard(index.name,index.symbol,index.price.toString())
             }
-//        Button() { }
         }
 
     }

@@ -31,9 +31,7 @@ import okhttp3.internal.userAgent
     "UnrememberedMutableState", "SuspiciousIndentation"
 )
 @Composable
-fun BasePage(
-    viewModel: TradeViewModel = hiltViewModel()
-) {
+fun BasePage() {
 
 
     val mainNavController = rememberNavController()

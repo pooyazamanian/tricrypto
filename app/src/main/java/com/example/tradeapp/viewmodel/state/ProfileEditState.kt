@@ -1,6 +1,6 @@
 package com.example.tradeapp.viewmodel.state
 
-import com.example.tradeapp.damin.model.Profile
+import com.example.tradeapp.dto.Profile
 import io.github.jan.supabase.auth.user.UserInfo
 
 

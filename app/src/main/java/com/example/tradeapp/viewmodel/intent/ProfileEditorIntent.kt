@@ -1,7 +1,6 @@
 package com.example.tradeapp.viewmodel.intent
 
-import com.example.tradeapp.damin.model.Order
-import com.example.tradeapp.damin.model.Profile
+import com.example.tradeapp.dto.Profile
 import io.github.jan.supabase.auth.user.UserInfo
 
 sealed class ProfileEditorIntent {

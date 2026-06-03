@@ -3,9 +3,18 @@ package com.example.tradeapp.damin.api
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.result.PostgrestResult
+import io.github.jan.supabase.realtime.PostgresAction
+import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.postgresChangeFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.forEach
 
 @Singleton
 class SupabaseClientWrapper
@@ -18,16 +27,26 @@ class SupabaseClientWrapper
     // ---------- Generic GET ----------
     suspend fun get(
         table: String,
-        columns: Columns = Columns.ALL,       // مثال: "*,profile(*)"
-        filter: Map<String, Any> = emptyMap()
+        columns: Columns = Columns.ALL,
+        filter: Map<String, Any> = emptyMap(),
+        orderActive: Boolean = false,
+        limit: Long? = null
     ): PostgrestResult {
+
         return db.from(table).select(columns) {
-            if(filter.isNotEmpty()){
-                filter.forEach { (key, value) ->
-                    filter {
-                        eq(key, value)
-                    }
+
+            filter.forEach { (key, value) ->
+                filter {
+                    eq(key, value)
                 }
+            }
+            if(orderActive){
+                order("timestamp", Order.DESCENDING)
+            }
+
+
+            limit?.let {
+                limit(it)
             }
         }
     }
@@ -75,5 +94,44 @@ class SupabaseClientWrapper
                 }
             }
         }
+    }
+
+    fun observeTable(
+        table: String,
+        filter: Map<String, Any> = emptyMap()
+    ): Flow<PostgresAction> {
+
+        val channel = client.channel(table)
+
+        return channel
+            .postgresChangeFlow<PostgresAction>(
+                schema = "public"
+            ) {
+                this.table = table
+            }
+            .filter { action ->
+
+                if (filter.isEmpty()) {
+                    true
+                } else {
+
+                    when (action) {
+
+                        is PostgresAction.Insert -> {
+                            filter.all { (key, value) ->
+                                action.record[key]?.toString()?.contains(value.toString()) == true
+                            }
+                        }
+
+                        is PostgresAction.Update -> {
+                            filter.all { (key, value) ->
+                                action.record[key]?.toString()?.contains(value.toString()) == true
+                            }
+                        }
+
+                        else -> true
+                    }
+                }
+            }
     }
 }

@@ -1,7 +1,7 @@
 package com.example.tradeapp.viewmodel.state
 
-import com.example.tradeapp.damin.model.Asset
-import com.example.tradeapp.damin.model.HistoryData
+import com.example.tradeapp.dto.AssetDto
+import com.example.tradeapp.dto.HistoryData
 import com.example.tradeapp.viewmodel.TimeRange
 
 data class PriceInfo(
@@ -25,7 +25,7 @@ data class ChartState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val historyData: HistoryData? = null,
-    val asset: Asset? = null, // فقط نام، لوگو، سیمبل
+    val asset: AssetDto? = null, // فقط نام، لوگو، سیمبل
     val priceInfo: PriceInfo? = null, // محاسبه شده از HistoryData
     val keyStats: KeyStats? = null, // محاسبه شده از HistoryData
     val selectedTimeRange: TimeRange = TimeRange.ONE_DAY,

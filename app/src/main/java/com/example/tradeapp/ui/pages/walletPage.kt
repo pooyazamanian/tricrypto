@@ -26,15 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.tradeapp.damin.model.UserAsset
 import com.example.tradeapp.ui.model.UiUserAsset
 import com.example.tradeapp.ui.tools.StateBoxCard
 import com.example.tradeapp.viewmodel.AssetViewModel
 import com.example.tradeapp.viewmodel.UserAssetViewModel
 import com.example.tradeapp.viewmodel.intent.AssetIntent
 import com.example.tradeapp.viewmodel.intent.UserAssetIntent
-import kotlin.String
-import kotlin.collections.emptyList
 
 @Composable
 fun WalletPage(
@@ -48,6 +45,7 @@ fun WalletPage(
     val listAsset = remember { mutableStateListOf<UiUserAsset>() }
     LaunchedEffect(userAssetState.userAssets, assetState.assets) {
         if (userAssetState.userAssets.isEmpty() && assetState.assets.isEmpty()) return@LaunchedEffect
+        Log.e(" if (userAssetState.userAssets.isEmpty() && assetState.assets.isEmpty())","false")
         userAssetState.userAssets.forEach { userAsset ->
             val selectedAsset = assetState.assets.find { assets ->
                 assets.id == userAsset.assetId

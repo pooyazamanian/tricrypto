@@ -1,11 +1,9 @@
 package com.example.tradeapp.ui.navigations
 
-import android.util.Log
 import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
-import com.example.tradeapp.damin.model.Profile
-import com.example.tradeapp.ui.pages.ChartPage
+import com.example.tradeapp.dto.Profile
 import com.example.tradeapp.ui.pages.FinalPaymentPage
 import com.example.tradeapp.ui.pages.HomePage
 import com.example.tradeapp.ui.pages.PaymentPage
@@ -33,8 +31,7 @@ fun MainPageNavigation(
             )
         ) {
             HomePage(
-                navigation = navigator,
-
+                navigation = navigator
                 )
         }
 
@@ -69,9 +66,8 @@ fun MainPageNavigation(
             NamePage.TRADE, deepLinks = listOf(
             )
         ) {
-
             TradePage(
-                navigation = navigator,
+                navigation = navigator
             )
         }
 

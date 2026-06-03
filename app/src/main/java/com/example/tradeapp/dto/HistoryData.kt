@@ -1,4 +1,4 @@
-package com.example.tradeapp.damin.model
+package com.example.tradeapp.dto
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -17,6 +17,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.observer.ResponseObserver
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
@@ -56,7 +57,7 @@ object NetworkModule {
                 connectTimeoutMillis = NETWORK_TIMEOUT
                 socketTimeoutMillis = NETWORK_TIMEOUT
             }
-
+            install(WebSockets)
             // 🔹 Logging
             install(Logging) {
                 logger = object : Logger {

@@ -1,7 +1,7 @@
 package com.example.tradeapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tradeapp.damin.model.Order
+import com.example.tradeapp.dto.Order
 import com.example.tradeapp.damin.util.Result
 import com.example.tradeapp.usecase.CreateOrderUseCase
 import com.example.tradeapp.usecase.GetOrdersForUserUseCase

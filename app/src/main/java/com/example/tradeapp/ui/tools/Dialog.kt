@@ -30,8 +30,6 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -75,15 +73,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
-import com.example.tradeapp.damin.model.Asset
-import com.example.tradeapp.damin.model.Order
-import com.example.tradeapp.damin.model.UserAsset
+import com.example.tradeapp.dto.AssetDto
+import com.example.tradeapp.dto.Order
+import com.example.tradeapp.dto.UserAsset
 import com.example.tradeapp.viewmodel.AssetViewModel
 import com.example.tradeapp.viewmodel.OrderViewModel
 import com.example.tradeapp.viewmodel.TradeViewModel
 import com.example.tradeapp.viewmodel.UserAssetViewModel
 import com.example.tradeapp.viewmodel.effect.OrderEffect
-import com.example.tradeapp.viewmodel.effect.TradeEffect
 import com.example.tradeapp.viewmodel.intent.OrderIntent
 import com.example.tradeapp.viewmodel.intent.TradeIntent
 import com.example.tradeapp.viewmodel.state.TradeType
@@ -178,7 +175,7 @@ fun SuggestedAmountSection(
 @SuppressLint("UnrememberedMutableState", "StateFlowValueCalledInComposition")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
-fun TradeCryptoBottomSheet(
+fun  TradeCryptoBottomSheet(
     isSheetVisible: SheetState,
     assetViewModel: AssetViewModel = hiltViewModel(),
     userAssetViewModel: UserAssetViewModel = hiltViewModel(),
@@ -770,10 +767,10 @@ private fun TradeModeButton(text: String, isSelected: Boolean, color: Color, onC
 @Composable
 private fun AssetSelectionSection(
     isBuyMode: Boolean,
-    assets: List<Asset>,
+    assets: List<AssetDto>,
     userAssets: List<UserAsset>,
-    selectedAsset: Asset?,
-    onAssetSelected: (Asset) -> Unit,
+    selectedAsset: AssetDto?,
+    onAssetSelected: (AssetDto) -> Unit,
     isLoading: Boolean
 ) {
     Text(
@@ -874,7 +871,7 @@ fun SuggestedAmountChip(
 // کامپوننت کارت رمزارز
 @Composable
 fun CryptoAssetCard(
-    asset: Asset,
+    asset: AssetDto,
     isSelected: Boolean,
     userQuantity: Double? = null,
     onClick: () -> Unit

@@ -1,6 +1,6 @@
 package com.example.tradeapp.repository
 
-import com.example.tradeapp.damin.model.Profile
+import com.example.tradeapp.dto.Profile
 import com.example.tradeapp.damin.repository.ProfileRepository
 import com.example.tradeapp.damin.api.SupabaseClientWrapper
 import io.github.jan.supabase.postgrest.result.PostgrestResult
