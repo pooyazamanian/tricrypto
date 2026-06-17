@@ -1,6 +1,7 @@
 package com.example.tradeapp.ui.pages
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,6 +22,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +44,7 @@ import com.example.tradeapp.ui.tools.Gradient
 import com.example.tradeapp.utils.NamePage
 import com.example.tradeapp.utils.sealedClasses.AuthResponse
 import com.example.tradeapp.viewmodel.LoginViewModel
+import com.example.tradeapp.viewmodel.util.UiState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -60,20 +66,43 @@ private fun RegisterHeader() {
         color = Color.White
     )
 }
-
 @Composable
 fun LoginPage(
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    onNavigateToBasePage: () -> Unit
 ) {
-    var emailValue by remember{
-        mutableStateOf("")
-    }
-    var passwordValue by remember {
-        mutableStateOf("")
+    // گرفتن State یکپارچه
+    val state by loginViewModel.state.collectAsState()
+    val context = LocalContext.current
+
+    var emailValue by remember { mutableStateOf("") }
+    var passwordValue by remember { mutableStateOf("") }
+
+    val isLoading = state.authStatus is UiState.Loading
+
+    // 1. کنترل Toastهای عمومی (مثل ثبت‌نام موفق یا خالی بودن فیلدها)
+    LaunchedEffect(state.toastMessage) {
+        state.toastMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            loginViewModel.clearToastMessage() // مصرف کردن پیام
+        }
     }
 
-//    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    // 2. کنترل وضعیت نتورک لاگین (Success و Error)
+    LaunchedEffect(state.authStatus) {
+        when (val status = state.authStatus) {
+            is UiState.Success -> {
+                // کاربر لاگین شده، انتقال به صفحه اصلی
+                onNavigateToBasePage()
+            }
+            is UiState.Error -> {
+                // ارور زمان ریکوئست
+                Toast.makeText(context, status.message ?: "ارور نامشخص", Toast.LENGTH_LONG).show()
+                loginViewModel.clearAuthError() // مصرف کردن ارور
+            }
+            else -> {} // Idle یا Loading کاری توی LaunchedEffect ندارن
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -91,126 +120,79 @@ fun LoginPage(
         ) {
             RegisterHeader()
             Spacer(modifier = Modifier.height(40.dp))
-            Column(
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = "Email",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
 
+            // -- فیلد ایمیل --
+            Column(horizontalAlignment = Alignment.Start) {
+                Text(text = "Email", color = Color.White, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
-
                 TextField(
                     value = emailValue,
-                    onValueChange = { newValue ->
-                        emailValue = newValue
-                    },
-                    placeholder = {
-                        Text(
-                            text = "john.doe@example.com",
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
-                    },
+                    onValueChange = { emailValue = it },
+                    placeholder = { Text("john.doe@example.com", color = Color.White.copy(0.7f)) },
                     shape = RoundedCornerShape(10.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = darkGray,
-                        unfocusedContainerColor = darkGray
+                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                        unfocusedIndicatorColor = Color.Transparent, focusedIndicatorColor = Color.Transparent,
+                        focusedContainerColor = Color.DarkGray, unfocusedContainerColor = Color.DarkGray
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading
                 )
             }
+
             Spacer(modifier = Modifier.height(20.dp))
-            Column(
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = "Password",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
 
+            // -- فیلد پسورد --
+            Column(horizontalAlignment = Alignment.Start) {
+                Text(text = "Password", color = Color.White, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
-
                 TextField(
                     value = passwordValue,
-                    onValueChange = { newValue ->
-                        passwordValue = newValue
-                    },
-                    placeholder = {
-                        Text(
-                            text = "Enter your password",
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
-                    },
+                    onValueChange = { passwordValue = it },
+                    placeholder = { Text("Enter your password", color = Color.White.copy(0.7f)) },
                     visualTransformation = PasswordVisualTransformation(),
                     shape = RoundedCornerShape(10.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = darkGray,
-                        unfocusedContainerColor = darkGray
+                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                        unfocusedIndicatorColor = Color.Transparent, focusedIndicatorColor = Color.Transparent,
+                        focusedContainerColor = Color.DarkGray, unfocusedContainerColor = Color.DarkGray
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading
                 )
             }
+
             Spacer(modifier = Modifier.height(35.dp))
+
+            // -- دکمه اصلی لاگین/ثبت نام --
             Button(
-                onClick = {
-                    loginViewModel.signUpWithEmail(emailValue, passwordValue)
-//                        .onEach { result ->
-//                            if ( result is AuthResponse.Success) {
-//                                loginViewModel.state.value = NamePage.BASE_PAGE
-//                            } else {
-//                                Log.e("auth", "Email Failed")
-//                            }
-//                        }
-//                        .launchIn(coroutineScope)
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White
-                ),
+                onClick = { loginViewModel.submit(emailValue, passwordValue) },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                enabled = !isLoading
             ) {
-                Text(
-                    text = "Sign up",
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Black, strokeWidth = 2.dp)
+                } else {
+                    Text(text = if (state.isSignUpMode) "Sign up" else "Log in", color = Color.Black, fontWeight = FontWeight.Bold)
+                }
             }
 
             Spacer(modifier = Modifier.height(25.dp))
 
+            // -- تغییر حالت (ورود / ثبت‌نام) --
             TextButton(
-                onClick = {
-
-                }
+                onClick = { loginViewModel.toggleMode() },
+                enabled = !isLoading
             ) {
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                fontWeight = FontWeight.Light,
-                                color = Color.White.copy(alpha = 0.8f)
-                            )
-                        ) {
-                            append("Already have an account? ")
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Light, color = Color.White.copy(0.8f))) {
+                            append(if (state.isSignUpMode) "Already have an account? " else "Don't have an account? ")
                         }
-
-                        withStyle(
-                            style = SpanStyle(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        ) {
-                            append("Log in")
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.White)) {
+                            append(if (state.isSignUpMode) "Log in" else "Sign up")
                         }
                     }
                 )

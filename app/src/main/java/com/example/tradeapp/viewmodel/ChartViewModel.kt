@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.tradeapp.dto.HistoryData
 import com.example.tradeapp.repository.ChartRepository
 import com.example.tradeapp.viewmodel.intent.ChartIntent
-import com.example.tradeapp.viewmodel.state.TradeType
 import com.example.tradeapp.viewmodel.state.ChartState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -28,10 +27,14 @@ import com.example.tradeapp.viewmodel.state.PriceInfo
 sealed class ChartEffect {
     data class ShowError(val message: String) : ChartEffect()
     data class ShowSuccess(val message: String) : ChartEffect()
-    data class NavigateToTrade(val assetId: String, val tradeType: TradeType) : ChartEffect()
+//    data class NavigateToTrade(val assetId: String, val tradeType: TradeType) : ChartEffect()
 }
 // TimeRange.kt
-enum class TimeRange(val hours: Long, val label: String, val resolution: String) {
+enum class TimeRange(
+    val hours: Long,
+    val label: String,
+    val resolution: String
+) {
     ONE_DAY_BEFORE(24, "۱ روز قبل", "5"),
     ONE_DAY(24, "۱ روز", "5"),
     FIVE_DAYS(5 * 24, "۵ روز", "15"),
@@ -104,15 +107,13 @@ class ChartViewModel @Inject constructor(
                 _state.update { it.copy(isRefreshing = true) }
             }
 
-            val currentTime = System.currentTimeMillis() / 1000
-            val fromTime = calculateFromTime(timeRange, currentTime)
+//            val currentTime = System.currentTimeMillis() / 1000
+//            val fromTime = calculateFromTime(timeRange, currentTime)
 
             try {
                 when (val result = chartRepository.fetchHistory(
-                    symbol = "crypto-bitcoin",
-                    resolution = "5",
-                    from = 1762269322,
-                    to = 1762355722
+                    symbol = "BTC-USDT",
+                    range = timeRange
                 )) {
                     is Result.Success -> {
                         val data = result.data

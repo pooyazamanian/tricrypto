@@ -1,11 +1,10 @@
 package com.example.tradeapp.viewmodel.state
 
 import com.example.tradeapp.models.MarketTrend
+import com.example.tradeapp.viewmodel.util.UiStateWithCatch
 
 data class MarketTrendsState(
-    val isLoading: Boolean = false,
-    val trends: List<MarketTrend> = emptyList(),
-    val error: String? = null
+    val trendsData: UiStateWithCatch<List<MarketTrend>> = UiStateWithCatch.Idle
 )
 
 sealed interface MarketTrendsIntent {

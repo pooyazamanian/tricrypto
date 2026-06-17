@@ -84,12 +84,19 @@ fun BaseCard(
 }
 
 
-@Preview
 @Composable
-fun MainCoinCard() {
+fun MainCoinCard(
+    nameCoin:String,
+    symbol: String,
+//    count: String? = null,
+    price: String,
+    onclick: () -> Unit
+) {
     BaseCard(
         buttonColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-        onclick = {},
+        onclick = {
+            onclick()
+        },
         borderColor = MaterialTheme.colorScheme.primary,
         liveContent = {
             Column(
@@ -120,7 +127,7 @@ fun MainCoinCard() {
                     )
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        text = "BITCOIN",
+                        text = nameCoin,
                         color = MaterialTheme.colorScheme.background,
                         fontSize = 16.sp,
                         maxLines = 2,
@@ -132,7 +139,7 @@ fun MainCoinCard() {
                 }
                 Spacer(Modifier.height(5.dp))
                 Text(
-                    text = "8600",
+                    text = symbol,
                     color = MaterialTheme.colorScheme.background,
                     fontSize = 15.sp,
                     maxLines = 2,
@@ -143,7 +150,7 @@ fun MainCoinCard() {
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "+50 (+3.23%)",
+                    text = price,
                     color = MaterialTheme.colorScheme.surfaceTint,
                     fontSize = 13.sp,
                     maxLines = 2,
@@ -438,13 +445,17 @@ fun StateBoxCard(
 @Composable
 fun StateBoxCard(
     nameCoin:String,
-    count: String,
-    price: String
+    symbol: String,
+    count: String? = null,
+    price: String,
+    onclick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 10.dp),
+            .padding(horizontal = 10.dp, vertical = 10.dp).clickable{
+                onclick()
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -472,7 +483,7 @@ fun StateBoxCard(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "Bank Rakyat Indonesia",
+                    text = symbol,
                     color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
                     fontSize = 11.sp,
                     maxLines = 2,
@@ -491,16 +502,18 @@ fun StateBoxCard(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.End
                 ) {
-                    Text(
-                        text = count,
-                        color = MaterialTheme.colorScheme.background,
-                        fontSize = 15.sp,
-                        maxLines = 2,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    count?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.background,
+                            fontSize = 15.sp,
+                            maxLines = 2,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
+                //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = "$price $",

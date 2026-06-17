@@ -1,18 +1,17 @@
 package com.example.tradeapp.usecase
 
-import com.example.tradeapp.models.Order
-import com.example.tradeapp.damin.util.Result
 import com.example.tradeapp.damin.repository.OrderRepository
+import com.example.tradeapp.damin.util.Result
 import com.example.tradeapp.dto.toOrders
-import java.util.UUID
+import com.example.tradeapp.models.Order
 import javax.inject.Inject
 
-class GetOrdersForUserUseCase @Inject constructor(
+class GetOrdersUseCase @Inject constructor(
     private val repository: OrderRepository
 ) {
     suspend operator fun invoke(): Result<List<Order>> {
         return try {
-            when (val result = repository.getOrdersForUser()) {
+            when (val result = repository.getOrders()) {
                 is Result.Success -> {
                     Result.Success(
                         result.data.toOrders()

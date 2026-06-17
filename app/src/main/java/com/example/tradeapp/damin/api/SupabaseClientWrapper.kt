@@ -5,11 +5,13 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.result.PostgrestResult
+import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
+import kotlinx.serialization.json.JsonElement
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.component1
@@ -133,5 +135,16 @@ class SupabaseClientWrapper
                     }
                 }
             }
+    }
+
+    suspend fun rpc(
+        functionName: String,
+        params: Map<String, JsonElement>
+    ): PostgrestResult {
+
+        return db.rpc(
+            function = functionName,
+            parameters = params
+        )
     }
 }

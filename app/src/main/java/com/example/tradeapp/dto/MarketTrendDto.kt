@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MarketTrendDto(
     @SerialName("id") val id: String? = null,
-    @SerialName("asset_id") val assetId: String? = null,
     @SerialName("trend_type") val trendType: String? = null,
     @SerialName("title") val title: String? = null,
     @SerialName("description") val description: String? = null,
@@ -16,13 +15,11 @@ data class MarketTrendDto(
     @SerialName("is_active") val isActive: Boolean? = null,
     @SerialName("starts_at") val startsAt: String? = null,
     @SerialName("ends_at") val endsAt: String? = null,
-    @SerialName("created_by") val createdBy: String? = null,
-    @SerialName("created_at") val createdAt: String? = null,
-    @SerialName("updated_at") val updatedAt: String? = null
+    @SerialName("asset") val asset: AssetDto? = null
 )
 fun MarketTrendDto.toDomain(): MarketTrend {
     return MarketTrend(
-        assetId = assetId,
+        asset = asset,
         trendType = trendType,
         title = title,
         rank = rank,

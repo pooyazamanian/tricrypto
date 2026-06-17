@@ -20,27 +20,27 @@ import com.example.tradeapp.viewmodel.WatchlistViewModel
 import io.github.jan.supabase.auth.auth
 
 @Composable
-fun SplashPage(loginViewModel: LoginViewModel) {
+fun SplashPage() {
 
 
-    val isLoggedIn = remember { mutableStateOf(false) }
-    val supabase = loginViewModel.getSupaBase()
-
-    LaunchedEffect(Unit) {
-        val session = supabase.auth.currentSessionOrNull()
-        isLoggedIn.value = session != null
-        if (session != null) {
-            println("کاربر لاگین شده است، توکن: ${session.accessToken}")
-        } else {
-            println("کاربر لاگین نشده است")
-        }
-    }
-
-    if (isLoggedIn.value) {
-        Text("کاربر لاگین شده است")
-    } else {
-        Text("کاربر لاگین نشده است")
-    }
+//    val isLoggedIn = remember { mutableStateOf(false) }
+//    val supabase = loginViewModel.getSupaBase()
+//
+//    LaunchedEffect(Unit) {
+//        val session = supabase.auth.currentSessionOrNull()
+//        isLoggedIn.value = session != null
+//        if (session != null) {
+//            println("کاربر لاگین شده است، توکن: ${session.accessToken}")
+//        } else {
+//            println("کاربر لاگین نشده است")
+//        }
+//    }
+//
+//    if (isLoggedIn.value) {
+//        Text("کاربر لاگین شده است")
+//    } else {
+//        Text("کاربر لاگین نشده است")
+//    }
     Box(
         modifier = Modifier
             .fillMaxSize()

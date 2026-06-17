@@ -1,9 +1,8 @@
 package com.example.tradeapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tradeapp.dto.Order
+import com.example.tradeapp.models.Order
 import com.example.tradeapp.damin.util.Result
-import com.example.tradeapp.usecase.CreateOrderUseCase
 import com.example.tradeapp.usecase.GetOrdersForUserUseCase
 import com.example.tradeapp.usecase.UpdateOrderStatusUseCase
 import com.example.tradeapp.viewmodel.effect.OrderEffect
@@ -25,9 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OrderViewModel @Inject constructor(
     private val getOrdersUseCase: GetOrdersForUserUseCase,
-    private val createOrderUseCase: CreateOrderUseCase,
     private val updateOrderStatusUseCase: UpdateOrderStatusUseCase,
-    private val supabase: SupabaseClient
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(OrderState())
@@ -36,10 +33,6 @@ class OrderViewModel @Inject constructor(
     private val _effect = Channel<OrderEffect>()
     val effect = _effect.receiveAsFlow()
 
-    private val userId: UUID? by lazy {
-        supabase.auth.currentSessionOrNull()?.user?.id?.let { UUID.fromString(it) }
-    }
-
     init {
         handleIntent(OrderIntent.LoadOrders)
     }
@@ -47,16 +40,14 @@ class OrderViewModel @Inject constructor(
     fun handleIntent(intent: OrderIntent) {
         when (intent) {
             OrderIntent.LoadOrders -> loadOrders()
-            is OrderIntent.CreateOrder -> createOrder(intent.order)
             is OrderIntent.UpdateOrderStatus -> updateOrderStatus(intent.orderId, intent.status)
         }
     }
 
     private fun loadOrders() {
         viewModelScope.launch {
-            userId?.let { id ->
                 _state.update { it.copy(isLoading = true) }
-                when (val result = getOrdersUseCase(id)) {
+                when (val result = getOrdersUseCase()) {
                     is Result.Success -> {
                         _state.update {
                             it.copy(isLoading = false, orders = result.data, error = null)
@@ -69,30 +60,11 @@ class OrderViewModel @Inject constructor(
                         _effect.send(OrderEffect.ShowError(result.exception.message ?: "خطا در بارگذاری سفارشات"))
                     }
                 }
-            }
+
         }
     }
 
-    private fun createOrder(order: Order) {
-        viewModelScope.launch {
-            userId?.let { id ->
-                _state.update { it.copy(isLoading = true) }
-                when (val result = createOrderUseCase(order.copy(userId = id.toString() ))) {
-                    is Result.Success -> {
-                        _state.update { it.copy(isLoading = false) }
-                        _effect.send(OrderEffect.ShowSuccess("سفارش با موفقیت ثبت شد"))
-                        loadOrders()
-                    }
-                    is Result.Error -> {
-                        _state.update {
-                            it.copy(isLoading = false, error = result.exception.message)
-                        }
-                        _effect.send(OrderEffect.ShowError(result.exception.message ?: "خطا در ثبت سفارش"))
-                    }
-                }
-            }
-        }
-    }
+
 
     private fun updateOrderStatus(orderId: String, status: String) {
         viewModelScope.launch {

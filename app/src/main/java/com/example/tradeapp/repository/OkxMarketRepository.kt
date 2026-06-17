@@ -16,14 +16,19 @@ import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -53,110 +58,81 @@ class OkxMarketRepository @Inject constructor(
     // prevent spam reconnect
     private var lastSentSymbols = emptySet<String>()
 
-    override suspend fun connect(symbols: List<String>) {
+    override suspend fun connect(
+        symbols: List<String>
+    ) {
+        val incoming = symbols.toSet()
+        val before = this.symbols.toSet()
 
-        val newSymbols = symbols.toSet()
+        // فقط اضافه کن
+        this.symbols.addAll(incoming)
 
-        Log.d("WS", "🚀 connect() called with: $newSymbols")
+        val after = this.symbols.toSet()
+        // هیچ چیز جدیدی اضافه نشده
+        if (before == after) return
 
-        if (newSymbols == lastSentSymbols) {
-            Log.d("WS", "⏭ same symbols, skip reconnect")
-            return
-        }
-
-        lastSentSymbols = newSymbols
-        this.symbols.clear()
-        this.symbols.addAll(newSymbols)
-
-        Log.d("WS", "🔁 symbols updated -> reconnect()")
-
-//        reconnect()
+        reconnect()
     }
-
 
     private fun reconnect() {
 
-        Log.d("WS", "♻️ reconnect() triggered")
-
         socketJob?.cancel()
-        Log.d("WS", "🧹 previous socketJob cancelled")
 
         socketJob = scope.launch {
-
-            Log.d("WS", "🟡 socketJob started")
 
             while (isActive) {
 
                 try {
-                    Log.d("WS", "🌐 creating websocket session...")
-
                     session?.close()
-                    Log.d("WS", "🔌 old session closed")
-
                     session = client.webSocketSession {
                         url {
                             protocol = URLProtocol.WSS
                             host = "ws.okx.com"
                             port = 8443
-                            path("/ws/v5/public")
+                            path(
+                                "/ws/v5/public"
+                            )
                         }
                     }
 
-                    Log.d("WS", "✅ websocket session created")
-
-                    Log.d("WS", "📡 subscribing to: $symbols")
                     subscribe(symbols.toList())
-                    Log.d("WS", "📡 subscribe sent")
 
                     val emitJob = launch {
-
-                        Log.d("WS", "📤 emitJob started")
-
                         while (isActive) {
-                            Log.d("WS", "📤 emitting cache size=${cache.size}")
-
                             _tickerStream.emit(cache.toMap())
-
                             delay(2000)
                         }
                     }
 
-                    Log.d("WS", "👂 entering incoming loop")
-
                     for (frame in session!!.incoming) {
 
-                        Log.d("WS", "📩 frame received: ${frame.frameType}")
+                        if (frame !is Frame.Text) continue
 
-                        if (frame !is Frame.Text) {
-                            Log.d("WS", "⚠️ non-text frame ignored")
-                            continue
-                        }
-
-                        val text = frame.readText()
-
-                        Log.d("WS", "📩 raw message: $text")
-
-                        handle(text)
+                        handle(frame.readText())
                     }
 
-                    Log.d("WS", "❌ incoming loop exited")
                     emitJob.cancel()
 
                 } catch (e: Exception) {
-
-                    Log.e("WS", "💥 websocket error: ${e.message}", e)
-
-                    delay(3000)
-                    Log.d("WS", "🔄 retrying reconnect...")
+                    delay(3000) // auto reconnect
                 }
             }
         }
     }
+
     private suspend fun subscribe(list: List<String>) {
         val args = list.joinToString(",") {
             """{"channel":"tickers","instId":"$it"}"""
         }
-
+        Log.d(
+            "WS",
+            "📡 subscribe sent ${"""
+                {
+                  "op":"subscribe",
+                  "args":[$args]
+                }
+                """.trimIndent()}"
+        )
         session?.send(
             Frame.Text(
                 """{"op":"subscribe","args":[$args]}"""
@@ -177,9 +153,7 @@ class OkxMarketRepository @Inject constructor(
         cache[t.instId] = CryptoTicker(
             symbol = t.instId,
             price = last,
-            percentChange = ((last - open) / open) * 100,
-//            high24h = t.high24h.toDouble(),
-//            low24h = t.low24h.toDouble()
+            percentChange = ((last - open) / open) * 100
         )
     }
 
@@ -190,6 +164,7 @@ class OkxMarketRepository @Inject constructor(
         symbols.clear()
     }
 }
+
 
 
 

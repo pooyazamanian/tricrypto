@@ -14,15 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.unit.*
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
 import com.example.tradeapp.ui.navigations.MainPageNavigation
 import com.example.tradeapp.ui.tools.BottomBar
 import com.example.tradeapp.ui.tools.TopBar
 import com.example.tradeapp.ui.tools.TradeCryptoBottomSheet
-import com.example.tradeapp.viewmodel.TradeViewModel
 import kotlinx.coroutines.launch
-import okhttp3.internal.userAgent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint(

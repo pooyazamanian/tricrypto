@@ -9,6 +9,8 @@ import com.example.tradeapp.usecase.ObserveMarketBySymbolsUseCase
 import com.example.tradeapp.viewmodel.effect.WatchlistEffect
 import com.example.tradeapp.viewmodel.intent.WatchlistIntent
 import com.example.tradeapp.viewmodel.state.WatchlistState
+import com.example.tradeapp.viewmodel.util.UiStateWithCatch
+import com.example.tradeapp.viewmodel.util.dataOrCached
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,7 +22,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 @HiltViewModel
 class WatchlistViewModel @Inject constructor(
@@ -39,115 +40,108 @@ class WatchlistViewModel @Inject constructor(
     private var priceJob: Job? = null
 
     init {
-        Log.d(TAG, "ViewModel created 🚀")
+        Log.d(TAG, "ViewModel created \uD83D\uDE80")
         onIntent(WatchlistIntent.Load)
     }
 
     fun onIntent(intent: WatchlistIntent) {
         when (intent) {
-
             WatchlistIntent.Load -> {
-                Log.d(TAG, "Intent: Load")
                 load()
             }
-
             is WatchlistIntent.RefreshPrices -> {
-                Log.d(TAG, "Intent: RefreshPrices -> ${intent.symbols}")
                 observePrices(intent.symbols)
             }
         }
     }
 
     private fun load() {
-
         viewModelScope.launch {
-
             Log.d(TAG, "Loading watchlist API...")
 
-            _state.update { it.copy(isLoading = true) }
+            // گرفتن دیتای فعلی (یا کش شده) تا موقع لودینگ صفحه سفید نشه
+            val currentData = _state.value.watchlistData.dataOrCached() ?: emptyList()
+
+            // رفتن به حالت لودینگ همراه با نگه داشتن دیتای کش شده
+            _state.update {
+                it.copy(watchlistData = UiStateWithCatch.Loading(cachedData = currentData))
+            }
 
             when (val res = getWatchlistUseCase()) {
-
                 is Result.Success -> {
-
                     val data = res.data
-
-                    val symbols =
-                        data.map { "${it.symbol}-USDT" }
+                    val symbols = data.map { "${it.symbol}-USDT" }
 
                     Log.d(TAG, "Watchlist loaded: ${data.size}")
-                    Log.d(TAG, "Watchlist data: ${data.first()}")
 
-                    Log.d(TAG, "Symbols: $symbols")
-
+                    // موفقیت! دیتای جدید رو به عنوان Success جایگزین می‌کنیم
                     _state.update {
-                        it.copy(
-                            isLoading = false,
-                            assets = data
-                        )
+                        it.copy(watchlistData = UiStateWithCatch.Success(data))
                     }
 
-                    onIntent(
-                        WatchlistIntent.RefreshPrices(symbols)
-                    )
+                    // حالا که واچ‌لیست اومد، استریم قیمت‌ها رو استارت می‌زنیم
+                    onIntent(WatchlistIntent.RefreshPrices(symbols))
                 }
 
                 is Result.Error -> {
-
                     Log.e(TAG, "Watchlist error: ${res.exception.message}")
 
+                    // ارور! اما دیتای کش شده رو پاس می‌دیم تا کاربر همچنان لیست رو ببینه
                     _state.update {
                         it.copy(
-                            isLoading = false,
-                            error = res.exception.message
+                            watchlistData = UiStateWithCatch.Error(
+                                message = res.exception.message,
+                                cachedData = currentData
+                            )
                         )
                     }
 
                     _effect.emit(
-                        WatchlistEffect.ShowError(
-                            res.exception.message ?: "Unknown error"
-                        )
+                        WatchlistEffect.ShowError(res.exception.message ?: "Unknown error")
                     )
                 }
-
                 else -> Unit
             }
         }
     }
 
     private fun observePrices(symbols: List<String>) {
-
         Log.d(TAG, "Starting price stream...")
-
         priceJob?.cancel()
 
-        priceJob =
-            observePricesUseCase(symbols)
-                .onEach { prices ->
-                    Log.d(TAG, "Watchlist data: ${prices.firstOrNull()}")
+        priceJob = observePricesUseCase(symbols)
+            .onEach { newPrices ->
+                // دیتای فعلی واچ‌لیست رو می‌گیریم
+                val currentAssets = _state.value.watchlistData.dataOrCached() ?: return@onEach
 
-                    Log.d(TAG, "Prices update received: ${prices.size}")
+                // ✨ حل مشکل آپدیت نشدن قیمت‌ها ✨
+                val updatedAssets = currentAssets.map { asset ->
+                    // توی لیست قیمت‌های جدید می‌گردیم تا سیمبل مربوط به این ارز رو پیدا کنیم
+                    // (فرض بر اینه که مدل newPrices فیلدهای symbol و price رو داره. در صورت نیاز تغییرش بده)
+                    val matchedPriceItem = newPrices.find {
+                        it.symbol == "${asset.symbol}-USDT" || it.symbol == asset.symbol
+                    }
 
-                    _state.update { state ->
-
-                        state.copy(
-                            assets = state.assets.map { asset ->
-
-                                asset.copy(
-                                    price = asset.price
-                                )
-                            }
-                        )
+                    if (matchedPriceItem != null) {
+                        // اگر قیمت جدیدی براش اومده بود، قیمت قبلی رو آپدیت می‌کنیم
+                        asset.copy(price = matchedPriceItem.price)
+                    } else {
+                        // اگر قیمتی براش نیومده بود، همون قبلی رو نگه می‌داریم
+                        asset
                     }
                 }
-                .launchIn(viewModelScope)
+
+                // لیست آپدیت شده رو دوباره به عنوان Success پوش می‌کنیم به UI
+                _state.update {
+                    it.copy(watchlistData = UiStateWithCatch.Success(updatedAssets))
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
         super.onCleared()
-
-        Log.d(TAG, "ViewModel cleared 🧹")
-
+        Log.d(TAG, "ViewModel cleared \uD83E\uDDF9")
         priceJob?.cancel()
     }
 }

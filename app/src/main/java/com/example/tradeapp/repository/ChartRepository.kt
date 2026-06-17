@@ -1,9 +1,15 @@
 package com.example.tradeapp.repository
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.example.tradeapp.dto.HistoryData
 import com.example.tradeapp.dto.MarketData
 import com.example.tradeapp.damin.util.Result
+import com.example.tradeapp.dto.OkxHistoryResponseDto
+import com.example.tradeapp.dto.toHistoryData
+import com.example.tradeapp.repository.util.toLimit
+import com.example.tradeapp.repository.util.toOkxBar
+import com.example.tradeapp.viewmodel.TimeRange
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.websocket.webSocket
@@ -124,18 +130,30 @@ class ChartRepository @Inject constructor(
         }
     }
 
-    suspend fun fetchHistory(symbol: String, resolution: String, from: Long, to: Long): Result<HistoryData> =
+    suspend fun fetchHistory(
+        symbol: String,
+        range: TimeRange
+    ): Result<HistoryData> =
         withContext(Dispatchers.IO) {
-            try {
-                val response: HistoryData =
-                    client.get("https://dashboard-api.tgju.org/v1/tv2/history") {
-                        parameter("symbol", symbol)
-                        parameter("resolution", resolution)
-                        parameter("from", from)
-                        parameter("to", to)
-                    }.body()
 
-                Result.Success(response)
+            try {
+
+                val response: OkxHistoryResponseDto =
+                    client.get(
+                        "https://www.okx.com/api/v5/market/history-candles"
+                    ) {
+
+                        parameter("instId", symbol)
+                        parameter("bar", range.toOkxBar())
+                        parameter("limit", minOf(range.toLimit(), 300))
+                    }.body()
+                val res = response.toHistoryData()
+
+                Log.d("ChartRepository", "HistoryData: $res")
+                Result.Success(
+                    res
+                )
+
             } catch (e: Exception) {
                 Result.Error(e)
             }

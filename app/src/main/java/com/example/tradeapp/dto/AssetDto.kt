@@ -15,8 +15,6 @@ data class AssetDto(
     @SerialName("logo_url") val logoUrl: String? = null,
     @SerialName("secondary_image_url") val secondaryImageUrl: String? = null,
     @SerialName("is_active") val isActive: Boolean? = null,
-    @SerialName("created_at") val createdAt: String? = null,
-    @SerialName("updated_at") val lastModified: String? = null
 )
 
 

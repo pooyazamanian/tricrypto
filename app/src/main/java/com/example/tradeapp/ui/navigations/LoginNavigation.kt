@@ -23,7 +23,7 @@ fun LoginNavigation(
         startDestination = NamePage.LOGIN_FIRST
     ) {
         composable(route = NamePage.LOGIN_FIRST) {
-            LoginPage(loginViewModel)
+            LoginPage(loginViewModel){}
         }
         composable(route = NamePage.LOGIN_COMPLETE) {
             CompleteProfile()

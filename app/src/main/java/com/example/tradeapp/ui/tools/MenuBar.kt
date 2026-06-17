@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TimeDropdownMenu() {
     var expanded by remember { mutableStateOf(false) }
-    val options = listOf("1 jam", "6 jam", "12 jam", "24 jam", "48 jam")
+    val options = listOf("1 ساعت", "6 ساعت", "12 ساعت", "24 ساعت", "48 ساعت")
     var selectedOption by remember { mutableStateOf(options.last()) }
 
     Box(

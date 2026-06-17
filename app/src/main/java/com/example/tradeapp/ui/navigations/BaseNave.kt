@@ -14,6 +14,7 @@ import com.example.tradeapp.utils.NamePage
 import com.example.tradeapp.utils.NetworkObserver
 import com.example.tradeapp.viewmodel.LoginViewModel
 import com.example.tradeapp.viewmodel.WatchlistViewModel
+import com.example.tradeapp.viewmodel.util.dataOrCached
 
 
 @Composable
@@ -28,37 +29,24 @@ fun BaseNav(
         showLostConnection.value = !isConnected
     }
 
-
     if (showLostConnection.value) {
         NetWorkConnectionDialog()
     }
-    val targetPage by loginViewModel.state.collectAsState()
 
-    // انیمیشن برای جابجایی بین صفحات
+    // گرفتن State کامل
+    val state by loginViewModel.state.collectAsState()
+
     AnimatedContent(
-        targetState = targetPage,
+        targetState = state.currentPage, // مستقیم از currentPage استفاده می‌کنیم
         transitionSpec = {
-            // انیمیشن فقط با fade
-            fadeIn(animationSpec = tween(300)) togetherWith
-                    fadeOut(animationSpec = tween(300))
+            fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
         },
         label = "PageTransition"
     ) { targetPage ->
         when (targetPage) {
-            NamePage.SPLASHSCREEN -> {
-                SplashPage(loginViewModel)
-            }
-            NamePage.LOGIN -> {
-                LoginNavigation(loginViewModel)
-            }
-            NamePage.CHART ->{
-                ChartPage(
-//                    navigator,
-                    "6dfbff52-894d-4c24-b129-34a73dafe1a0")
-            }
-            NamePage.BASE_PAGE -> {
-                BasePage()
-            }
+            NamePage.SPLASHSCREEN -> SplashPage()
+            NamePage.LOGIN -> LoginNavigation(loginViewModel)
+            NamePage.BASE_PAGE -> BasePage()
         }
     }
 }

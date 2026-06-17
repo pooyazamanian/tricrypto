@@ -264,9 +264,7 @@ fun CandlestickChartView(
 ) {
     CartesianChartHost(
         rememberCartesianChart(
-            rememberCandlestickCartesianLayer(
-                rangeProvider = rememberDynamicRangeProvider(selectedTimeRange)
-            ),
+            rememberCandlestickCartesianLayer(),
             startAxis = VerticalAxis.rememberStart(
                 valueFormatter = StartAxisValueFormatter,
                 itemPlacer = StartAxisItemPlacer,

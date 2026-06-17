@@ -9,7 +9,8 @@ import com.example.tradeapp.damin.database.SecureStorage
 import com.example.tradeapp.repository.AuthenticationRepositoryImpl
 import com.example.tradeapp.ui.tools.TableName
 import com.example.tradeapp.utils.NamePage
-import com.example.tradeapp.utils.sealedClasses.AuthResponse
+import com.example.tradeapp.viewmodel.util.UiState
+import com.example.tradeapp.viewmodel.state.LoginState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
 import java.util.UUID
@@ -29,92 +31,96 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val supabase: SupabaseClient,
     private val secureStorage: SecureStorage
-) :ViewModel(){
-    // استفاده از StateFlow به جای mutableStateOf
-    private val _state = MutableStateFlow(NamePage.SPLASHSCREEN)
-    val state: StateFlow<String> = _state.asStateFlow()//    init {
-//        viewModelScope.launch {
-//            // همین‌جا session فعلی رو چک می‌کنیم
-//            val session = supabase.auth.currentSessionOrNull()
-//            state.value = if (session != null) NamePage.BASE_PAGE else NamePage.LOGIN
-//        }
-//    }
+) : ViewModel() {
 
-    fun getSupaBase() = supabase
+    private val _state = MutableStateFlow(LoginState())
+    val state: StateFlow<LoginState> = _state.asStateFlow()
 
     init {
+        checkSession()
+    }
+
+    private fun checkSession() {
         viewModelScope.launch {
             val session = supabase.auth.currentSessionOrNull()
-
-            _state.value = if (session != null) {
-                NamePage.BASE_PAGE
+            if (session != null) {
+                // کاربر لاگین است -> برو به صفحه اصلی
+                _state.update { it.copy(currentPage = NamePage.BASE_PAGE) }
             } else {
-                NamePage.LOGIN
+                // کاربر لاگین نیست -> برو به صفحه لاگین
+                _state.update { it.copy(currentPage = NamePage.LOGIN) }
             }
         }
     }
 
-    fun signUpWithEmail(emailValue: String, passwordValue: String) {
+    fun toggleMode() {
+        _state.update {
+            it.copy(
+                isSignUpMode = !it.isSignUpMode,
+                authStatus = UiState.Idle, // ریست کردن ارورهای قبلی نتورک
+                toastMessage = null
+            )
+        }
+    }
+
+    fun submit(emailValue: String, passwordValue: String) {
+        if (emailValue.isBlank() || passwordValue.isBlank()) {
+            _state.update { it.copy(toastMessage = "ایمیل و رمز عبور نباید خالی باشند") }
+            return
+        }
+
+        // فقط authStatus لودینگ می‌شود، currentPage همون LOGIN می‌ماند تا صفحه غیب نشود!
+        _state.update { it.copy(authStatus = UiState.Loading) }
+
         viewModelScope.launch {
             try {
-                // توجه: متد signInWith برای لاگین است، نه ثبت‌نام (signUp)
-                supabase.auth.signInWith(Email) {
-                    email = emailValue
-                    password = passwordValue
+                if (_state.value.isSignUpMode) {
+                    supabase.auth.signUpWith(Email) {
+                        email = emailValue
+                        password = passwordValue
+                    }
+                    _state.update {
+                        it.copy(
+                            authStatus = UiState.Idle,
+                            isSignUpMode = false,
+                            toastMessage = "ثبت‌نام موفق! لطفاً ایمیل خود را تایید کرده و Sign in کنید."
+                        )
+                    }
+                } else {
+                    supabase.auth.signInWith(Email) {
+                        email = emailValue
+                        password = passwordValue
+                    }
+                    val session = supabase.auth.currentSessionOrNull()
+                    if (session != null) {
+                        secureStorage.saveString(TableName.AUTH_TOKEN, session.accessToken)
+                        secureStorage.saveString(TableName.REFRESH_TOKEN, session.refreshToken)
+
+                        // لاگین موفق! تغییر Navigation به صفحه اصلی و موفقیت دکمه
+                        _state.update {
+                            it.copy(
+                                authStatus = UiState.Success(Unit),
+                                currentPage = NamePage.BASE_PAGE
+                            )
+                        }
+                    } else {
+                        _state.update { it.copy(authStatus = UiState.Error("ایمیل تایید نشده است.")) }
+                    }
                 }
-
-                // اگر کد به اینجا برسد و Exception ندهد، یعنی لاگین صد درصد موفق بوده است.
-                // نیازی نیست دوباره session را چک کنید، چون گاهی آپدیت شدن آن میلی‌ثانیه‌ای طول می‌کشد.
-                Log.d("auth", "Login Success! Changing state to BASE_PAGE")
-                _state.value = NamePage.BASE_PAGE
-
             } catch (e: Exception) {
-                Log.e("auth", "Login Failed: ${e.localizedMessage}")
+                _state.update { it.copy(authStatus = UiState.Error(e.localizedMessage ?: "خطایی رخ داد")) }
             }
         }
     }
-    fun signInWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
-        try {
-            supabase.auth.signInWith(Email) {
-                email = emailValue
-                password = passwordValue
-            }
-            val session = supabase.auth.currentSessionOrNull()
-            Log.d("auth", session.toString())
-            if (session != null) {
-                secureStorage.saveString(TableName.AUTH_TOKEN,session.accessToken)
-                secureStorage.saveString(TableName.REFRESH_TOKEN,session.refreshToken)
-            } else {
-                // Handle email confirmation case, e.g., emit a different response
-                emit(AuthResponse.Error("Email confirmation required. Check your email."))
-                return@flow
-            }
-            emit(AuthResponse.Success)
-        } catch (e: Exception) {
-            emit(AuthResponse.Error(e.localizedMessage))
-        }
+
+    fun clearToastMessage() {
+        _state.update { it.copy(toastMessage = null) }
     }
 
-
-    fun createNonce(): String {
-        val rawNonce = UUID.randomUUID().toString()
-        val bytes = rawNonce.toByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(bytes)
-        return digest.fold("") { str, it ->
-            str + "%02x".format(it)
-        }
+    fun clearAuthError() {
+        _state.update { it.copy(authStatus = UiState.Idle) }
     }
-
-    fun signOut() {
-        viewModelScope.launch {
-            supabase.auth.signOut()
-            secureStorage.clearString(TableName.AUTH_TOKEN)
-            secureStorage.clearString(TableName.REFRESH_TOKEN)
-
-            _state.value = NamePage.LOGIN
-        }
-    }
+}
 //    private val _email = MutableStateFlow("")
 //    val email: Flow<String> = _email
 //
@@ -146,4 +152,4 @@ class LoginViewModel @Inject constructor(
 //            )
 //        }
 //    }
-}
+//}

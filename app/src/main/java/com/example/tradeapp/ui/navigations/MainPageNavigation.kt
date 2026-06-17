@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
 import com.example.tradeapp.dto.Profile
+import com.example.tradeapp.ui.pages.ChartPage
 import com.example.tradeapp.ui.pages.FinalPaymentPage
 import com.example.tradeapp.ui.pages.HomePage
 import com.example.tradeapp.ui.pages.PaymentPage
@@ -96,12 +97,19 @@ fun MainPageNavigation(
         }
 
 
-//        composable(
-//            NamePage.CHART, deepLinks = listOf(
-//            )
-//        ) {
-//            ChartPage(navigator)
-//        }
+
+        composable(
+            "${NamePage.CHART}/{assetId}",
+            arguments = listOf(
+                navArgument("assetId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val assetId = backStackEntry.arguments?.getString("assetId") ?: ""
+
+            ChartPage(
+                assetId = assetId,
+                navigation = navigator
+            )
+        }
 //        composable(
 //            NamePage.WALLET, deepLinks = listOf(
 //            )

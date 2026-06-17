@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import androidx.wear.compose.material.Text
 import coil3.compose.AsyncImage
 import com.example.tradeapp.R
@@ -78,7 +79,7 @@ import java.text.DecimalFormat
 
 @Composable
 fun ChartPage(
-//    navigation: NavHostController,
+    navigation: NavHostController,
     assetId: String,
     viewModel: ChartViewModel = hiltViewModel()
 ) {
@@ -87,55 +88,36 @@ fun ChartPage(
     val modelProducer = remember { CartesianChartModelProducer() }
 
     // ✅ این خط رو اضافه کن - selectedTimeRange
-    var selectedTimeRange by remember { mutableStateOf(TimeRange.ONE_DAY) }
-
+    var selectedTimeRange by remember {
+        mutableStateOf(TimeRange.ONE_DAY)
+    }
     // بارگذاری اولیه Asset
     LaunchedEffect(assetId) {
         viewModel.handleIntent(ChartIntent.LoadAssetInfo(assetId))
     }
 
     // ✅ به‌روزرسانی نمودار
-    LaunchedEffect(state.historyData, selectedTimeRange) {
-        val data = state.historyData
+    LaunchedEffect(state.historyData) {
 
-        if (data != null && data.s == "ok") {
-            try {
-                val currentTime = System.currentTimeMillis() / 1000 // به ثانیه
-                val minTime = when (selectedTimeRange) {
-                    TimeRange.ONE_DAY_BEFORE -> currentTime - (48 * 60 * 60)
-                    TimeRange.ONE_DAY -> currentTime - (24 * 60 * 60)
-                    TimeRange.FIVE_DAYS -> currentTime - (5 * 24 * 60 * 60)
-                    TimeRange.ONE_MONTH -> currentTime - (30 * 24 * 60 * 60)
-                    TimeRange.FIVE_MONTHS -> currentTime - (150 * 24 * 60 * 60)
-                    TimeRange.ONE_YEAR -> currentTime - (365 * 24 * 60 * 60)
-                    TimeRange.ALL -> Long.MIN_VALUE
-                }
+        val data = state.historyData ?: return@LaunchedEffect
 
-                // فیلتر کردن داده‌ها
-                val filteredIndices = data.t.mapIndexedNotNull { index, time ->
-                    if (time >= minTime && time <= currentTime) index else null
-                }
+        if (data.s != "ok") return@LaunchedEffect
 
-                Log.d("ChartPage", "Filtered: ${filteredIndices.size} out of ${data.t.size}")
+        try {
 
-                if (filteredIndices.isNotEmpty()) {
-                    // ✅ محدود کردن به 500 تا - برای جلوگیری از OutOfMemory
-                    val limitedIndices = filteredIndices.takeLast(500)
+            modelProducer.runTransaction {
 
-                    modelProducer.runTransaction {
-                        candlestickSeries(
-                            x = limitedIndices.map { data.t[it].toDouble() },
-                            opening = limitedIndices.map { data.o[it] },
-                            closing = limitedIndices.map { data.c[it] },
-                            low = limitedIndices.map { data.l[it] },
-                            high = limitedIndices.map { data.h[it] }
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("ChartPage", "Chart error", e)
-                Toast.makeText(context, "خطا در نمایش نمودار", Toast.LENGTH_SHORT).show()
+                candlestickSeries(
+                    x = data.t.map { it.toDouble() },
+                    opening = data.o,
+                    closing = data.c,
+                    low = data.l,
+                    high = data.h
+                )
             }
+
+        } catch (e: Exception) {
+            Log.e("ChartPage", "Chart error", e)
         }
     }
 
@@ -183,7 +165,7 @@ private fun ChartPageContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+//            .verticalScroll(rememberScrollState())
             .padding(10.dp)
     ) {
         // هدر

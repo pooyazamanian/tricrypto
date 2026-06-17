@@ -74,16 +74,14 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.tradeapp.dto.AssetDto
-import com.example.tradeapp.dto.Order
+import com.example.tradeapp.models.Order
 import com.example.tradeapp.dto.UserAsset
 import com.example.tradeapp.viewmodel.AssetViewModel
-import com.example.tradeapp.viewmodel.OrderViewModel
-import com.example.tradeapp.viewmodel.TradeViewModel
+import com.example.tradeapp.viewmodel.CreateOrderViewModel
 import com.example.tradeapp.viewmodel.UserAssetViewModel
-import com.example.tradeapp.viewmodel.effect.OrderEffect
-import com.example.tradeapp.viewmodel.intent.OrderIntent
-import com.example.tradeapp.viewmodel.intent.TradeIntent
-import com.example.tradeapp.viewmodel.state.TradeType
+import com.example.tradeapp.viewmodel.effect.CreatingOrderEffect
+import com.example.tradeapp.viewmodel.intent.OrderingIntent
+import com.example.tradeapp.viewmodel.state.OrderType
 import kotlinx.coroutines.launch
 
 @Composable
@@ -179,12 +177,11 @@ fun  TradeCryptoBottomSheet(
     isSheetVisible: SheetState,
     assetViewModel: AssetViewModel = hiltViewModel(),
     userAssetViewModel: UserAssetViewModel = hiltViewModel(),
-    orderViewModel: OrderViewModel = hiltViewModel(),
-    tradeViewModel: TradeViewModel = hiltViewModel(),
+    createOrderViewModel: CreateOrderViewModel = hiltViewModel()
 ) {
     val assetState by assetViewModel.state.collectAsState()
     val userAssetState by userAssetViewModel.state.collectAsState()
-    val tradeState by tradeViewModel.state.collectAsState()
+    val tradingState by createOrderViewModel.state.collectAsState()
 
     val scope = rememberCoroutineScope()
 
@@ -194,7 +191,7 @@ fun  TradeCryptoBottomSheet(
     var selectedSuggestedAmount by remember { mutableStateOf<String?>(null) }
 
     // قیمت لحظه‌ای (برای selected asset)
-    val currentPrice = tradeState.selectedAsset?.let { asset ->
+    val currentPrice = tradingState.selectedAsset?.let { asset ->
         // فرض: در آینده از یک PriceFeed استفاده می‌کنی
         // الان برای تست ثابت داریم
         25000.0 // باید از TradeRepository.getLatestPrice(asset.id) بگیری
@@ -211,13 +208,13 @@ fun  TradeCryptoBottomSheet(
     }
     // Collect effects
     LaunchedEffect(Unit) {
-        orderViewModel.effect.collect { effect ->
+        createOrderViewModel.effect.collect { effect ->
             when (effect) {
-                is OrderEffect.ShowSuccess -> {
+                is CreatingOrderEffect.ShowSuccess -> {
                     scope.launch { isSheetVisible.hide() }
                 }
 
-                is OrderEffect.ShowError -> {
+                is CreatingOrderEffect.ShowError -> {
                     // نمایش خطا در UI (مثلاً Toast)
                 }
             }
@@ -271,19 +268,19 @@ fun  TradeCryptoBottomSheet(
                 ) {
                     TradeModeButton(
                         text = "خرید",
-                        isSelected = tradeState.tradeType == TradeType.BUY,
+                        isSelected = tradingState.orderType == OrderType.BUY,
                         color = MaterialTheme.colorScheme.primary,
                         onClick = {
-                            tradeViewModel.handleIntent(TradeIntent.SetTradeType(TradeType.BUY))
+                            createOrderViewModel.handleIntent(OrderingIntent.SetTradeType(OrderType.BUY))
                             resetInputs()
                         }
                     )
                     TradeModeButton(
                         text = "فروش",
-                        isSelected = tradeState.tradeType == TradeType.SELL,
+                        isSelected = tradingState.orderType == OrderType.SELL,
                         color = MaterialTheme.colorScheme.error,
                         onClick = {
-                            tradeViewModel.handleIntent(TradeIntent.SetTradeType(TradeType.SELL))
+                            createOrderViewModel.handleIntent(OrderingIntent.SetTradeType(OrderType.SELL))
                             resetInputs()
                         }
                     )
@@ -293,12 +290,12 @@ fun  TradeCryptoBottomSheet(
 
                 // نمایش لیست دارایی‌ها
                 AssetSelectionSection(
-                    isBuyMode = tradeState.tradeType == TradeType.BUY,
+                    isBuyMode = tradingState.orderType == OrderType.BUY,
                     assets = assetState.assets,
                     userAssets = userAssetState.userAssets,
-                    selectedAsset = tradeState.selectedAsset,
+                    selectedAsset = tradingState.selectedAsset,
                     onAssetSelected = { asset ->
-                        tradeViewModel.handleIntent(TradeIntent.SelectAsset(asset))
+                        createOrderViewModel.handleIntent(OrderingIntent.SelectAsset(asset))
                         if (useMarketPrice) {
                             tradePrice = TextFieldValue(currentPrice.toString())
                         }
@@ -307,7 +304,7 @@ fun  TradeCryptoBottomSheet(
                 )
 
                 // نمایش قیمت لحظه‌ای (ساده‌شده)
-                tradeState.selectedAsset?.let { asset ->
+                tradingState.selectedAsset?.let { asset ->
                     Spacer(modifier = Modifier.height(16.dp))
                     asset.symbol?.let {
                         CurrentPriceCard(
@@ -352,7 +349,7 @@ fun  TradeCryptoBottomSheet(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // مقادیر پیشنهادی
-                val suggestedAmounts = if (tradeState.tradeType == TradeType.BUY) {
+                val suggestedAmounts = if (tradingState.orderType == OrderType.BUY) {
                     listOf("0.01", "0.05", "0.1", "0.5", "1")
                 } else {
                     listOf("25%", "50%", "75%", "100%")
@@ -363,9 +360,9 @@ fun  TradeCryptoBottomSheet(
                     selected = selectedSuggestedAmount,
                     onAmountSelected = { amount ->
                         selectedSuggestedAmount = amount
-                        if (tradeState.tradeType == TradeType.SELL && tradeState.selectedAsset != null) {
+                        if (tradingState.orderType == OrderType.SELL && tradingState.selectedAsset != null) {
                             val userAsset =
-                                userAssetState.userAssets.find { it.assetId == tradeState.selectedAsset!!.id }
+                                userAssetState.userAssets.find { it.assetId == tradingState.selectedAsset!!.id }
                             userAsset?.quantity?.let { qty ->
                                 val percent = amount.trim('%').toDoubleOrNull() ?: 0.0
                                 val calc = (qty * percent) / 100
@@ -386,13 +383,13 @@ fun  TradeCryptoBottomSheet(
                         tradeAmount = it
                         selectedSuggestedAmount = null
                     },
-                    assetSymbol = tradeState.selectedAsset?.symbol ?: "واحد"
+                    assetSymbol = tradingState.selectedAsset?.symbol ?: "واحد"
                 )
 
                 // نمایش موجودی در حالت فروش
-                if (tradeState.tradeType == TradeType.SELL && tradeState.selectedAsset != null) {
+                if (tradingState.orderType == OrderType.SELL && tradingState.selectedAsset != null) {
                     val userAsset =
-                        userAssetState.userAssets.find { it.assetId == tradeState.selectedAsset!!.id }
+                        userAssetState.userAssets.find { it.assetId == tradingState.selectedAsset!!.id }
                     userAsset?.quantity?.let { qty ->
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
@@ -405,7 +402,7 @@ fun  TradeCryptoBottomSheet(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                "$qty ${tradeState.selectedAsset!!.symbol}",
+                                "$qty ${tradingState.selectedAsset!!.symbol}",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -424,18 +421,18 @@ fun  TradeCryptoBottomSheet(
 
                 // دکمه تأیید
                 TradeActionButton(
-                    isBuyMode = tradeState.tradeType == TradeType.BUY,
+                    isBuyMode = tradingState.orderType == OrderType.BUY,
                     useMarketPrice = useMarketPrice,
-                    isLoading = orderViewModel.state.value.isLoading,
-                    enabled = tradeState.selectedAsset != null &&
+                    isLoading = createOrderViewModel.state.value.isLoading,
+                    enabled = tradingState.selectedAsset != null &&
                             (tradeAmount.text.toDoubleOrNull() ?: 0.0) > 0 &&
                             (tradePrice.text.toDoubleOrNull() ?: 0.0) > 0,
                     onClick = {
-                        tradeState.selectedAsset?.let { asset ->
+                        tradingState.selectedAsset?.let { asset ->
                             val amount = tradeAmount.text.toDoubleOrNull() ?: 0.0
                             val price = tradePrice.text.toDoubleOrNull() ?: 0.0
                             if (amount > 0 && price > 0) {
-                                if (tradeState.tradeType == TradeType.SELL) {
+                                if (tradingState.orderType == OrderType.SELL) {
                                     val userAsset =
                                         userAssetState.userAssets.find { it.assetId == asset.id }
                                     if (userAsset == null || (userAsset.quantity
@@ -446,14 +443,11 @@ fun  TradeCryptoBottomSheet(
                                     }
                                 }
                                 val order = Order(
-                                    userId = null ,
-                                    assetId = asset.id,
-                                    orderType = if (tradeState.tradeType == TradeType.BUY) "BUY" else "SELL",
+                                    orderType = tradingState.orderType,
                                     quantity = amount,
                                     price = price,
-                                    status = "PENDING"
                                 )
-                                orderViewModel.handleIntent(OrderIntent.CreateOrder(order))
+                                createOrderViewModel.handleIntent(OrderingIntent.CreateOrder(order))
                             }
                         }
                     }
@@ -474,7 +468,9 @@ fun TradeActionButton(
     onClick: () -> Unit
 ) {
     Button(
-        onClick = onClick,
+        onClick = {
+            onClick()
+        },
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),

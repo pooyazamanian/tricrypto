@@ -15,7 +15,6 @@ class ObserveMarketBySymbolsUseCase @Inject constructor(
     ): Flow<List<CryptoTicker>> {
         return repository.tickerStream.onStart { repository.connect(symbols) }
             .map { map ->
-
                 symbols.mapNotNull { symbol ->
                     map[symbol]
                 }
