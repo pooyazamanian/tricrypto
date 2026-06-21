@@ -6,12 +6,14 @@ import com.example.tradeapp.damin.repository.ProfileRepository
 import javax.inject.Inject
 
 class UpsertProfileUseCase @Inject constructor(
-    val repository: ProfileRepository
-
+    private val repository: ProfileRepository
 ) {
-    suspend operator fun invoke(profile: Profile): Result<String> {
-        val result = repository.upsertProfile(profile)
-            ?: return Result.Error(Exception("No response from server"))
-        return Result.Success("Success")
+    suspend operator fun invoke(profile: Profile): Result<Unit> {
+        return try {
+            repository.upsertProfile(profile)
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
     }
 }

@@ -8,8 +8,6 @@ data class Profile(
     @SerialName("id") val id: String? = null,
     @SerialName("username") val username: String? = null,
     @SerialName("full_name") val fullName: String? = null,
-    @SerialName("national_id") val nationalId: String? = null,
-    @SerialName("created_at") val createdAt: String? = null,
-    @SerialName("updated_at") val updatedAt: String? = null
+    @SerialName("national_id") val nationalId: String? = null
 )
 //    : Parcelable

@@ -14,19 +14,15 @@ class ProfileRepositoryImp @Inject constructor(
 
 ) : ProfileRepository {
     // ---------- Profiles ----------
-    override suspend fun getProfile(userId: UUID): PostgrestResult? = try {
-        supabaseClient.get(
+    override suspend fun getProfile(userId: UUID): PostgrestResult? {
+        return supabaseClient.get(
             "profiles",
             filter = mapOf("id" to userId)
         )
-    } catch (e: Exception) {
-        null
     }
 
-    override suspend fun upsertProfile(profile: Profile): PostgrestResult? = try {
-        supabaseClient.upsert<Profile>("profiles", profile)
-    } catch (e: Exception) {
-        null
+    override suspend fun upsertProfile(profile: Profile): PostgrestResult {
+        return supabaseClient.upsert<Profile>("profiles", profile)
     }
 
 }

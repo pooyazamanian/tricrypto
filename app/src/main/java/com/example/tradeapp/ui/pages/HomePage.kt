@@ -44,6 +44,10 @@ import com.example.tradeapp.viewmodel.util.UiStateWithCatch
 import com.example.tradeapp.viewmodel.util.dataOrCached
 
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 @SuppressLint("ConfigurationScreenWidthHeight", "SuspiciousIndentation")
 @Composable
 fun HomePage(
@@ -60,11 +64,14 @@ fun HomePage(
     val isLoadingMarketTrends = marketTrendsState.trendsData is UiStateWithCatch.Loading
     // تشخیص وضعیت لودینگ برای نشان دادن اسپینر یا شیمر (در صورت نیاز)
     val isLoadingWatchlist = watchlistState.watchlistData is UiStateWithCatch.Loading
-        Column(
-            modifier = Modifier,
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.End
-        ) {
+    
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.End
+    ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

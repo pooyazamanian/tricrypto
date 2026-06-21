@@ -119,14 +119,12 @@ fun BasePage() {
                     isSheetVisible = sheetState
                 )
             }
-            Column(
-                modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize().verticalScroll(scrollState)
+            Box(
+                modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize()
             ) {
                 MainPageNavigation(
                     navigator = mainNavController,
                 )
-                Spacer(Modifier.height(padding.calculateBottomPadding() + 10.dp))
-
             }
 
         }

@@ -33,6 +33,9 @@ import com.example.tradeapp.viewmodel.UserAssetViewModel
 import com.example.tradeapp.viewmodel.intent.AssetIntent
 import com.example.tradeapp.viewmodel.intent.UserAssetIntent
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 @Composable
 fun WalletPage(
     navigation: NavHostController,
@@ -43,9 +46,13 @@ fun WalletPage(
     val userAssetState by userAssetViewModel.state.collectAsState()
     val assetState by assetViewModel.state.collectAsState()
     val listAsset = remember { mutableStateListOf<UiUserAsset>() }
+    
+    val scrollState = rememberScrollState()
+    
     LaunchedEffect(userAssetState.userAssets, assetState.assets) {
         if (userAssetState.userAssets.isEmpty() && assetState.assets.isEmpty()) return@LaunchedEffect
         Log.e(" if (userAssetState.userAssets.isEmpty() && assetState.assets.isEmpty())","false")
+        listAsset.clear()
         userAssetState.userAssets.forEach { userAsset ->
             val selectedAsset = assetState.assets.find { assets ->
                 assets.id == userAsset.assetId
@@ -69,8 +76,8 @@ fun WalletPage(
     }
 
     Column(
-        Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        Modifier.fillMaxSize().verticalScroll(scrollState),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(

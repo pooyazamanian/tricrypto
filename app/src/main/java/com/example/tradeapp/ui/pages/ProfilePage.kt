@@ -39,6 +39,10 @@ import kotlinx.serialization.json.Json
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 @Composable
 fun ProfilePage(
     navigation: NavHostController,
@@ -46,11 +50,14 @@ fun ProfilePage(
 ) {
 
     val state by profileViewModel.state.collectAsState()
+    val scrollState = rememberScrollState()
+    
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(10.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(

@@ -12,13 +12,21 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.user.UserInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+sealed class ProfileUiEffect {
+    data class ShowError(val message: String) : ProfileUiEffect()
+    object SaveSuccess : ProfileUiEffect()
+}
 
 @HiltViewModel
 class ProfileEditorViewModel @Inject constructor(
@@ -29,92 +37,60 @@ class ProfileEditorViewModel @Inject constructor(
     private val _state = MutableStateFlow(ProfileEditState())
     val state: StateFlow<ProfileEditState> = _state.asStateFlow()
 
-
-    val userId: UUID? by lazy {
-        supabase.auth.currentSessionOrNull()?.user?.id?.let { UUID.fromString(it) }
-    }
+    private val _effect = Channel<ProfileUiEffect>()
+    val effect = _effect.receiveAsFlow()
 
     fun handleIntent(intent: ProfileEditorIntent) {
         when (intent) {
-            is ProfileEditorIntent.SendProfileDate -> {
-                sendProfileData(intent)
-            }
-
+            is ProfileEditorIntent.SendProfileDate -> sendProfileAndPhoneData()
             is ProfileEditorIntent.EditPhoneUserDate -> {
-                sendPhoneUserData(intent)
+                // Now handled within sendProfileAndPhoneData as part of the save flow
             }
-
-            is ProfileEditorIntent.ChangeProfileField -> {
-                applyProfileFieldChange(intent.update)
-            }
-            is ProfileEditorIntent.ChangeUserInfoField -> {
-                applyUserInfoFieldChange(intent.update)
-            }
+            is ProfileEditorIntent.ChangeProfileField -> applyProfileFieldChange(intent.update)
+            is ProfileEditorIntent.ChangeUserInfoField -> applyUserInfoFieldChange(intent.update)
         }
     }
+
     private fun applyProfileFieldChange(update: Profile) {
-        _state.update { current ->
-            current.copy(profile = update)
-        }
+        _state.update { it.copy(profile = update) }
     }
 
     private fun applyUserInfoFieldChange(update: UserInfo) {
-        _state.update { current ->
-            current.copy(user = update)
-        }
+        _state.update { it.copy(user = update) }
     }
-    private fun sendPhoneUserData(intent: ProfileEditorIntent.EditPhoneUserDate) {
+
+    private fun sendProfileAndPhoneData() {
+        val currentProfile = _state.value.profile ?: return
+        val currentPhone = _state.value.user?.phone
+
         viewModelScope.launch {
-            Log.i("ProfileEditorViewModel", "start")
+            _state.update { it.copy(isLoading = true, error = null) }
+            
             try {
-                val res = supabase.auth.updateUser {
-                    this.phone = intent.phone
+                withContext(Dispatchers.IO) {
+                    // 1. Update Profile in Database
+                    val profileRes = upsertProfileUseCase(currentProfile)
+                    if (profileRes is Result.Error) {
+                        throw profileRes.exception
+                    }
+
+                    // 2. Update Phone in Auth if changed
+                    currentPhone?.let { phone ->
+                        supabase.auth.updateUser {
+                            this.phone = phone
+                        }
+                    }
                 }
-                Log.i("ProfileEditorViewModel", res.toString())
+
+                _state.update { it.copy(isLoading = false, res = true) }
+                _effect.send(ProfileUiEffect.SaveSuccess)
 
             } catch (e: Exception) {
-                Log.i("ProfileEditorViewModel", e.toString())
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        res = false,
-                        error = " : مشکلی پیش آمده است$e"
-                    )
-                }
-            }
-
-        }
-    }
-
-
-    private fun sendProfileData(intent: ProfileEditorIntent.SendProfileDate) {
-        viewModelScope.launch {
-            Log.i("ProfileEditorViewModel", "start")
-            val res = upsertProfileUseCase(intent.profile)
-            when (res) {
-                is Result.Error -> {
-                    Log.i("ProfileEditorViewModel", res.exception.toString())
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            res = false,
-                            error = " : مشکلی پیش آمده است${res.exception}"
-                        )
-                    }
-                }
-
-                is Result.Success<*> -> {
-                    Log.i("ProfileEditorViewModel", res.data.toString())
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            res = true
-                        )
-                    }
-                }
+                Log.e("ProfileEditorViewModel", "Error updating profile", e)
+                val errorMessage = "خطا در بروزرسانی: ${e.localizedMessage ?: "مشکلی پیش آمده است"}"
+                _state.update { it.copy(isLoading = false, res = false, error = errorMessage) }
+                _effect.send(ProfileUiEffect.ShowError(errorMessage))
             }
         }
     }
-
 }
-
