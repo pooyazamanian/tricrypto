@@ -52,9 +52,9 @@ fun FinalPaymentPage(navigator: NavHostController) {
         Spacer(modifier = Modifier.height(16.dp))
         
         DescriptionPart()
-        
-        Spacer(modifier = Modifier.weight(1f))
-        
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         GlassButton(
             text = "تایید نهایی",
             onClick = { navigator.popBackStack() }
