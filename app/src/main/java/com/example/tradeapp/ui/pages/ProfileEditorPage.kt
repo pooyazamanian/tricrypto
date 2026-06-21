@@ -7,7 +7,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -60,6 +62,7 @@ fun ProfileEditorPage(
         }
     }
 
+    val scrollState = rememberScrollState()
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color.Transparent
@@ -67,6 +70,7 @@ fun ProfileEditorPage(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(scrollState)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -203,6 +207,8 @@ fun ProfileEditorPage(
                     isLoading = state.isLoading
                 )
             }
+            Spacer(modifier = Modifier.height(200.dp))
+
         }
     }
 }
