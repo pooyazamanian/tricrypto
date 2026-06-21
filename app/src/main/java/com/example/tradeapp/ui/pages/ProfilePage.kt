@@ -1,17 +1,12 @@
 package com.example.tradeapp.ui.pages
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,25 +26,18 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.tradeapp.R
-import com.example.tradeapp.ui.tools.MainCard
-import com.example.tradeapp.ui.tools.MainImportantButton
-import com.example.tradeapp.ui.tools.RowContent
+import com.example.tradeapp.ui.components.*
 import com.example.tradeapp.utils.NamePage
 import com.example.tradeapp.viewmodel.ProfileViewModel
 import kotlinx.serialization.json.Json
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-
 @Composable
 fun ProfilePage(
     navigation: NavHostController,
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
-
     val state by profileViewModel.state.collectAsState()
     val scrollState = rememberScrollState()
     
@@ -56,113 +45,122 @@ fun ProfilePage(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(10.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(0.8f), verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(R.drawable.test),
-                contentDescription = "profile",
-                contentScale = ContentScale.Fit,
+        // Profile Header Card
+        GlassCard(opacity = 0.15f) {
+            Row(
                 modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-            )
-            Spacer(Modifier.size(20.dp))
-            Column(modifier = Modifier) {
-                Column(modifier = Modifier) {
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.test),
+                    contentDescription = "profile",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.1f))
+                )
+                Spacer(Modifier.width(20.dp))
+                Column {
                     Text(
-                        text = "ایمیل",
-                        color = MaterialTheme.colorScheme.background,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
+                        text = state.profile?.fullName ?: "نام کاربر",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    state.user?.email?.let {
-                        Text(
-                            text = it,
-                            color = MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Light,
-                            textAlign = TextAlign.End,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
-        }
-        Spacer(Modifier.size(20.dp))
-
-        MainCard {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                state.user?.phone?.let { RowContent("شماره تلفن", it) }
-                Spacer(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(MaterialTheme.colorScheme.primary)
-                )
-                state.profile?.fullName?.let { RowContent("نام کامل", it) }
-            }
-        }
-        Spacer(Modifier.size(20.dp))
-
-        MainCard {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                state.profile?.nationalId?.let { RowContent("کد ملی", it) }
-                Spacer(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(MaterialTheme.colorScheme.primary)
-                )
-                state.profile?.username?.let { RowContent("نام کاربری", it) }
-            }
-        }
-        if(!state.isLoading && state.profile != null && state.user != null){
-            Column(modifier = Modifier.fillMaxWidth()) {
-                MainImportantButton(
-                    modifier = Modifier
-                        .padding(20.dp)
-                        .fillMaxWidth(),
-                    text = "ویرایش پروفایل"
-                ) {
-                    val profileJson = Json.encodeToString(state.profile)
-                    val profile = URLEncoder.encode(profileJson, StandardCharsets.UTF_8.toString())
-                    val userJson = Json.encodeToString(state.user)
-                    val user = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
-                    navigation.navigate(
-                        "${NamePage.PROFILE_EDITOR}/${profile}/${user}"
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = state.user?.email ?: "ایمیل یافت نشد",
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-
-                MainImportantButton(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp)
-                        .fillMaxWidth(),
-                    text = "خروج از حساب"
-                ) {
-                    profileViewModel.logout()
-                }
             }
         }
 
+        Spacer(Modifier.height(20.dp))
+
+        // Personal Info Card
+        GlassCard(opacity = 0.12f) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                InfoRow(title = "نام کاربری", value = state.profile?.username ?: "-")
+                Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+                InfoRow(title = "شماره تلفن", value = state.user?.phone ?: "-")
+                Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+                InfoRow(title = "کد ملی", value = state.profile?.nationalId ?: "-")
+            }
+        }
+
+        Spacer(Modifier.height(32.dp))
+
+        // Actions
+        if (!state.isLoading && state.profile != null && state.user != null) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                GlassButton(
+                    text = "ویرایش پروفایل",
+                    onClick = {
+                        val profileJson = Json.encodeToString(state.profile)
+                        val profile = URLEncoder.encode(profileJson, StandardCharsets.UTF_8.toString())
+                        val userJson = Json.encodeToString(state.user)
+                        val user = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+                        navigation.navigate("${NamePage.PROFILE_EDITOR}/${profile}/${user}")
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                GlassButton(
+                    text = "خروج از حساب",
+                    onClick = { profileViewModel.logout() },
+                    containerColor = Color.White.copy(alpha = 0.1f),
+                    contentColor = Color(0xFFE94560)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(120.dp))
     }
+}
+
+@Composable
+private fun InfoRow(title: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            color = Color.White.copy(alpha = 0.6f),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun Divider(color: Color, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(color)
+    )
 }

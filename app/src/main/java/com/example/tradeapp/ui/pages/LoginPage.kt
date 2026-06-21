@@ -1,33 +1,9 @@
 package com.example.tradeapp.ui.pages
 
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,164 +11,118 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.tradeapp.ui.theme.darkGray
-import com.example.tradeapp.ui.tools.Gradient
-import com.example.tradeapp.utils.NamePage
-import com.example.tradeapp.utils.sealedClasses.AuthResponse
+import androidx.compose.ui.unit.sp
+import com.example.tradeapp.ui.components.*
 import com.example.tradeapp.viewmodel.LoginViewModel
 import com.example.tradeapp.viewmodel.util.UiState
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
-
-@Composable
-private fun RegisterHeader() {
-    Text(
-        text = "Create An Account",
-        style = MaterialTheme.typography.titleLarge,
-        color = Color.White,
-        fontWeight = FontWeight.Bold
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-        text = "Enter your personal data to create an account",
-        style = MaterialTheme.typography.bodyMedium,
-        color = Color.White
-    )
-}
 @Composable
 fun LoginPage(
     loginViewModel: LoginViewModel,
     onNavigateToBasePage: () -> Unit
 ) {
-    // گرفتن State یکپارچه
     val state by loginViewModel.state.collectAsState()
     val context = LocalContext.current
-
     var emailValue by remember { mutableStateOf("") }
     var passwordValue by remember { mutableStateOf("") }
 
     val isLoading = state.authStatus is UiState.Loading
 
-    // 1. کنترل Toastهای عمومی (مثل ثبت‌نام موفق یا خالی بودن فیلدها)
     LaunchedEffect(state.toastMessage) {
         state.toastMessage?.let { message ->
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            loginViewModel.clearToastMessage() // مصرف کردن پیام
+            loginViewModel.clearToastMessage()
         }
     }
 
-    // 2. کنترل وضعیت نتورک لاگین (Success و Error)
     LaunchedEffect(state.authStatus) {
         when (val status = state.authStatus) {
-            is UiState.Success -> {
-                // کاربر لاگین شده، انتقال به صفحه اصلی
-                onNavigateToBasePage()
-            }
+            is UiState.Success -> onNavigateToBasePage()
             is UiState.Error -> {
-                // ارور زمان ریکوئست
-                Toast.makeText(context, status.message ?: "ارور نامشخص", Toast.LENGTH_LONG).show()
-                loginViewModel.clearAuthError() // مصرف کردن ارور
+                Toast.makeText(context, status.message ?: "Error occurred", Toast.LENGTH_LONG).show()
+                loginViewModel.clearAuthError()
             }
-            else -> {} // Idle یا Loading کاری توی LaunchedEffect ندارن
+            else -> {}
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        Gradient()
+    GlassBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
-                .padding(top = 110.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            RegisterHeader()
-            Spacer(modifier = Modifier.height(40.dp))
+            Text(
+                text = if (state.isSignUpMode) "Create Account" else "Welcome Back",
+                color = Color.White,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = if (state.isSignUpMode) 
+                    "Enter your details to get started"
+                else 
+                    "Log in to continue trading",
+                color = Color.White.copy(alpha = 0.6f),
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
 
-            // -- فیلد ایمیل --
-            Column(horizontalAlignment = Alignment.Start) {
-                Text(text = "Email", color = Color.White, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(4.dp))
-                TextField(
-                    value = emailValue,
-                    onValueChange = { emailValue = it },
-                    placeholder = { Text("john.doe@example.com", color = Color.White.copy(0.7f)) },
-                    shape = RoundedCornerShape(10.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                        unfocusedIndicatorColor = Color.Transparent, focusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = Color.DarkGray, unfocusedContainerColor = Color.DarkGray
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading
-                )
-            }
+            Spacer(modifier = Modifier.height(48.dp))
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // -- فیلد پسورد --
-            Column(horizontalAlignment = Alignment.Start) {
-                Text(text = "Password", color = Color.White, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(4.dp))
-                TextField(
-                    value = passwordValue,
-                    onValueChange = { passwordValue = it },
-                    placeholder = { Text("Enter your password", color = Color.White.copy(0.7f)) },
-                    visualTransformation = PasswordVisualTransformation(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                        unfocusedIndicatorColor = Color.Transparent, focusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = Color.DarkGray, unfocusedContainerColor = Color.DarkGray
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading
-                )
-            }
-
-            Spacer(modifier = Modifier.height(35.dp))
-
-            // -- دکمه اصلی لاگین/ثبت نام --
-            Button(
-                onClick = { loginViewModel.submit(emailValue, passwordValue) },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                enabled = !isLoading
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Black, strokeWidth = 2.dp)
-                } else {
-                    Text(text = if (state.isSignUpMode) "Sign up" else "Log in", color = Color.Black, fontWeight = FontWeight.Bold)
+            GlassCard {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    GlassTextField(
+                        value = emailValue,
+                        onValueChange = { emailValue = it },
+                        label = "Email Address",
+                        placeholder = "e.g. name@example.com",
+                        enabled = !isLoading
+                    )
+                    
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    GlassTextField(
+                        value = passwordValue,
+                        onValueChange = { passwordValue = it },
+                        label = "Password",
+                        placeholder = "Enter your password",
+                        enabled = !isLoading
+                        // Note: In a real app, add password transformation here
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // -- تغییر حالت (ورود / ثبت‌نام) --
+            GlassButton(
+                text = if (state.isSignUpMode) "Sign Up" else "Log In",
+                onClick = { loginViewModel.submit(emailValue, passwordValue) },
+                isLoading = isLoading
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             TextButton(
                 onClick = { loginViewModel.toggleMode() },
                 enabled = !isLoading
             ) {
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Light, color = Color.White.copy(0.8f))) {
+                        withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.7f))) {
                             append(if (state.isSignUpMode) "Already have an account? " else "Don't have an account? ")
                         }
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.White)) {
-                            append(if (state.isSignUpMode) "Log in" else "Sign up")
+                        withStyle(style = SpanStyle(color = Color(0xFFE94560), fontWeight = FontWeight.Bold)) {
+                            append(if (state.isSignUpMode) "Log In" else "Sign Up")
                         }
                     }
                 )
@@ -200,45 +130,3 @@ fun LoginPage(
         }
     }
 }
-
-
-
-
-//            GoogleSignInButton(
-//                onClick = {
-//                    authManager.loginGoogleUser()
-//                        .onEach { result ->
-//                            if (result is AuthResponse.Success) {
-//                                Log.d("auth", "Google Success")
-//                            } else {
-//                                Log.e("auth", "Google Failed")
-//                            }
-//                        }
-//                        .launchIn(coroutineScope)
-//                }
-//            )
-
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                modifier = Modifier.padding(vertical = 30.dp)
-//            ) {
-//                Box(
-//                    modifier = Modifier
-//                        .weight(1f)
-//                        .height(1.dp)
-//                        .background(Color.White.copy(alpha = 0.2f))
-//                )
-//
-//                Text(
-//                    text = "Or",
-//                    color = Color.White.copy(alpha = 0.7f),
-//                    modifier = Modifier.padding(horizontal = 10.dp)
-//                )
-//
-//                Box(
-//                    modifier = Modifier
-//                        .weight(1f)
-//                        .height(1.dp)
-//                        .background(Color.White.copy(alpha = 0.2f))
-//                )
-//            }

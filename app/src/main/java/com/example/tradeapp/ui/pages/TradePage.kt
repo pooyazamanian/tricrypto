@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,132 +43,109 @@ fun TradePage(
     navigation: NavHostController,
     tradeViewModel: TradeListViewModel = hiltViewModel(),
     orderViewModel: OrderViewModel = hiltViewModel(),
-
-    ) {
+) {
     val tradeState by tradeViewModel.state.collectAsState()
     val orderState by orderViewModel.state.collectAsState()
+    val scrollState = rememberScrollState()
+
     LaunchedEffect(Unit) {
         tradeViewModel.handleIntent(TradeListIntent.LoadTrades)
         orderViewModel.handleIntent(OrderIntent.LoadOrders)
     }
+
     Column(
-        Modifier.fillMaxSize()
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.End
     ) {
-        Column(
-            modifier = Modifier,
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.End
+        LazyRow {
+            items(10) {
+                OptionButton()
+                Spacer(Modifier.width(10.dp))
+            }
+        }
+        Spacer(Modifier.height(20.dp))
+
+        LazyRow {
+            items(10) {
+                StateCard()
+                Spacer(Modifier.width(10.dp))
+            }
+        }
+        Spacer(Modifier.height(24.dp))
+
+        // Open Sell Orders
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            LazyRow {
-                items(10) {
-                    OptionButton()
-                    Spacer(Modifier.width(10.dp))
-                }
+            TimeDropdownMenu()
+            Text(
+                text = "فروش های باز",
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        orderState.orders.filter { it.orderType == OrderType.SELL }.forEach {
+            StateBoxCard(nameCoin = it.asset?.name ?: "", symbol = it.asset?.symbol ?: "", count = it.quantity.toString(), price = it.price.toString()) {
+                navigation.navigate("${NamePage.CHART}/${it.id}")
             }
-            Spacer(Modifier.height(10.dp))
-
-            LazyRow {
-                items(10) {
-                    StateCard()
-                    Spacer(Modifier.width(10.dp))
-                }
-            }
-            Spacer(Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TimeDropdownMenu()
-
-
-                Text(
-                    text = "فروش های باز",
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 16.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-
-            }
-            Spacer(Modifier.height(10.dp))
-            orderState.orders.filter { it.orderType == OrderType.SELL }.forEach {
-                StateBoxCard(nameCoin =it.asset?.name ?: "", symbol = it.asset?.symbol?: "", count = it.quantity.toString(), price = it.price.toString()){
-                    navigation.navigate("${NamePage.CHART}/${it.id}")
-
-                }
-            }
-            Spacer(Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TimeDropdownMenu()
-
-
-                Text(
-                    text = "خرید های باز",
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 16.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-
-            }
-            Spacer(Modifier.height(10.dp))
-            orderState.orders.filter { it.orderType == OrderType.BUY }.forEach {
-                StateBoxCard(nameCoin =it.asset?.name ?: "", symbol = it.asset?.symbol?: "", count = it.quantity.toString(), price = it.price.toString()){
-                    navigation.navigate("${NamePage.CHART}/${it.id}")
-
-
-                }
-            }
-            Spacer(Modifier.height(25.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TimeDropdownMenu()
-
-
-                Text(
-                    text = "ترید های بسته در لحظه",
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 16.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-
-            }
-            Spacer(Modifier.height(10.dp))
-            tradeState.trades.forEach {
-                StateBoxCard(nameCoin =it.asset?.name ?: "", symbol = it.asset?.symbol?: "", count = it.quantity.toString(), price = it.price.toString()){
-                    navigation.navigate("${NamePage.CHART}/${it.asset?.id}")
-
-
-                }
-            }
-
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
+        Spacer(Modifier.height(32.dp))
+
+        // Open Buy Orders
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TimeDropdownMenu()
+            Text(
+                text = "خرید های باز",
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        orderState.orders.filter { it.orderType == OrderType.BUY }.forEach {
+            StateBoxCard(nameCoin = it.asset?.name ?: "", symbol = it.asset?.symbol ?: "", count = it.quantity.toString(), price = it.price.toString()) {
+                navigation.navigate("${NamePage.CHART}/${it.id}")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        Spacer(Modifier.height(32.dp))
+
+        // Closed Trades
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TimeDropdownMenu()
+            Text(
+                text = "ترید های بسته در لحظه",
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        tradeState.trades.forEach {
+            StateBoxCard(nameCoin = it.asset?.name ?: "", symbol = it.asset?.symbol ?: "", count = it.quantity.toString(), price = it.price.toString()) {
+                navigation.navigate("${NamePage.CHART}/${it.asset?.id}")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        Spacer(modifier = Modifier.height(100.dp)) // Extra space for FAB and BottomBar
     }
 }

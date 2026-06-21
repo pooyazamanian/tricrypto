@@ -46,9 +46,9 @@ fun WalletPage(
     val userAssetState by userAssetViewModel.state.collectAsState()
     val assetState by assetViewModel.state.collectAsState()
     val listAsset = remember { mutableStateListOf<UiUserAsset>() }
-    
+
     val scrollState = rememberScrollState()
-    
+
     LaunchedEffect(userAssetState.userAssets, assetState.assets) {
         if (userAssetState.userAssets.isEmpty() && assetState.assets.isEmpty()) return@LaunchedEffect
         Log.e(" if (userAssetState.userAssets.isEmpty() && assetState.assets.isEmpty())","false")
@@ -76,7 +76,7 @@ fun WalletPage(
     }
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(scrollState),
+        Modifier.fillMaxSize().verticalScroll(scrollState).padding(16.dp).padding(bottom = 120.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

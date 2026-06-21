@@ -64,8 +64,9 @@ import androidx.wear.compose.material.Text
 import coil3.compose.AsyncImage
 import com.example.tradeapp.R
 import com.example.tradeapp.dto.AssetDto
+import com.example.tradeapp.ui.components.GlassCard
 import com.example.tradeapp.ui.tools.MainCard
-import com.example.tradeapp.ui.tools.RowContent
+
 import com.example.tradeapp.ui.tools.charts.CandlestickChartView
 import com.example.tradeapp.viewmodel.ChartViewModel
 import com.example.tradeapp.viewmodel.TimeRange
@@ -564,7 +565,7 @@ private fun KeyStatsSection(keyStats: KeyStats?) {
 
         Spacer(Modifier.height(5.dp))
 
-        MainCard {
+        GlassCard {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

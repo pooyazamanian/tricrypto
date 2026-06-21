@@ -7,8 +7,8 @@ import androidx.compose.ui.platform.*
 import androidx.hilt.navigation.compose.*
 import com.example.tradeapp.damin.session.AuthState
 import com.example.tradeapp.ui.BasePage
+import com.example.tradeapp.ui.components.NetWorkConnectionDialog
 import com.example.tradeapp.ui.pages.SplashPage
-import com.example.tradeapp.ui.tools.NetWorkConnectionDialog
 import com.example.tradeapp.utils.NetworkObserver
 import com.example.tradeapp.viewmodel.AuthViewModel
 import com.example.tradeapp.viewmodel.LoginViewModel
