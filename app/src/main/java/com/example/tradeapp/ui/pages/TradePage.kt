@@ -236,7 +236,7 @@ fun OrderCard(order: com.example.tradeapp.models.Order) {
                 Text(text = order.asset?.symbol ?: "", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
             
-            Column(horizontalAlignment = Alignment.End) {
+            Column(horizontalAlignment = Alignment.Start) {
                 Text(text = "مقدار: ${order.quantity}", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
                 Text(text = "قیمت: $${order.price}", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }

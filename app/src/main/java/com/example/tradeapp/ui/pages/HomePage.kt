@@ -1,10 +1,13 @@
 package com.example.tradeapp.ui.pages
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -59,51 +62,57 @@ fun HomePage(
             .padding(16.dp),
         horizontalAlignment = Alignment.End
     ) {
-        // Balance Section
-        GlassCard(opacity = 0.15f) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "حساب شما",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+        // Balance Section - Entrance Animation
+        val balanceAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+        AnimatedVisibility(
+            visibleState = balanceAnimState,
+            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(animationSpec = tween(600)) { it / 2 }
+        ) {
+            GlassCard(opacity = 0.15f) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text(
-                        text = "1,000,000,000",
-                        color = Color.White,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "تومان",
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 18.sp,
+                        text = "حساب شما",
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(16.dp).rotate(90f)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "5,000 (100%)",
-                        color = Color(0xFF4CAF50),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "1,000,000,000",
+                            color = Color.White,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "تومان",
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(16.dp).rotate(90f)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "5,000 (100%)",
+                            color = Color(0xFF4CAF50),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -138,22 +147,35 @@ fun HomePage(
         )
         
         if (isLoadingMarketTrends && trends.isNullOrEmpty()) {
-            CircularProgressIndicator(color = Color(0xFFE94560), modifier = Modifier.align(Alignment.CenterHorizontally))
-        }
-
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            trends?.let { list ->
-                items(list.size) { index ->
-                    val trend = list[index]
-                    TrendCard(
-                        name = trend.asset?.name ?: "",
-                        symbol = trend.asset?.symbol ?: "",
-                        price = trend.price.toString()
-                    ) {
-                        navigation.navigate("${NamePage.CHART}/${trend.asset?.id}")
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(5) {
+                    GlassShimmer(modifier = Modifier.width(140.dp).height(120.dp))
+                }
+            }
+        } else {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                trends?.let { list ->
+                    itemsIndexed(list) { index, trend ->
+                        val itemAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                        AnimatedVisibility(
+                            visibleState = itemAnimState,
+                            enter = fadeIn(animationSpec = tween(400, delayMillis = index * 100)) +
+                                    slideInHorizontally(animationSpec = tween(400, delayMillis = index * 100)) { it / 2 }
+                        ) {
+                            TrendCard(
+                                name = trend.asset?.name ?: "",
+                                symbol = trend.asset?.symbol ?: "",
+                                price = trend.price.toString()
+                            ) {
+                                navigation.navigate("${NamePage.CHART}/${trend.asset?.id}")
+                            }
+                        }
                     }
                 }
             }
@@ -171,19 +193,31 @@ fun HomePage(
         )
 
         if (isLoadingWatchlist && assetsWatchlist.isNullOrEmpty()) {
-            CircularProgressIndicator(color = Color(0xFFE94560), modifier = Modifier.align(Alignment.CenterHorizontally))
-        }
-
-        assetsWatchlist?.forEach { item ->
-            WatchlistItemCard(
-                name = item.name,
-                symbol = item.symbol,
-                price = item.price.toString(),
-                logoUrl = item.logoUrl
-            ) {
-                navigation.navigate("${NamePage.CHART}/${item.id}")
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                repeat(4) {
+                    GlassShimmer(modifier = Modifier.fillMaxWidth().height(80.dp))
+                }
             }
-            Spacer(modifier = Modifier.height(12.dp))
+        } else {
+            assetsWatchlist?.forEachIndexed { index, item ->
+                val itemAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                AnimatedVisibility(
+                    visibleState = itemAnimState,
+                    enter = fadeIn(animationSpec = tween(400, delayMillis = (index + 2) * 100)) +
+                            slideInVertically(animationSpec = tween(400, delayMillis = (index + 2) * 100)) { it / 2 }
+                ) {
+                    WatchlistItemCard(
+                        name = item.name,
+                        symbol = item.symbol,
+                        price = item.price.toString(),
+                        logoUrl = item.logoUrl
+                    ) {
+                        navigation.navigate("${NamePage.CHART}/${item.id}")
+                    }
+
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
         
         Spacer(modifier = Modifier.height(120.dp))
@@ -219,7 +253,7 @@ private fun WatchlistItemCard(name: String, symbol: String, price: String, logoU
             AsyncImage(
                 model = logoUrl,
                 contentDescription = name,
-                modifier = Modifier.size(44.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)),
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)),
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(R.drawable.test),
                 error = painterResource(R.drawable.test)
@@ -228,24 +262,15 @@ private fun WatchlistItemCard(name: String, symbol: String, price: String, logoU
             Spacer(modifier = Modifier.width(16.dp))
             
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = symbol, 
-                    color = Color.White, 
-                    fontSize = 17.sp, 
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = name, 
-                    color = Color.White.copy(alpha = 0.6f), 
-                    fontSize = 13.sp
-                )
+                Text(text = symbol, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = name, color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
             }
             
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "$price $", 
                     color = Color.White, 
-                    fontSize = 17.sp, 
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.End
                 )

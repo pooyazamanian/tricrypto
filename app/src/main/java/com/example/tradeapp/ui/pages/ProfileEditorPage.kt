@@ -1,6 +1,8 @@
 package com.example.tradeapp.ui.pages
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -73,22 +75,29 @@ fun ProfileEditorPage(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(40.dp))
-
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(160.dp)
-                        .background(Color.White.copy(alpha = 0.1f), CircleShape)
-                        .border(2.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+                
+                // Profile Image Animation
+                val imageAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                AnimatedVisibility(
+                    visibleState = imageAnimState,
+                    enter = fadeIn(animationSpec = tween(600)) + scaleIn(animationSpec = tween(600))
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.test),
-                        contentDescription = "profile",
-                        contentScale = ContentScale.Crop,
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(140.dp)
-                            .clip(CircleShape)
-                    )
+                            .size(160.dp)
+                            .background(Color.White.copy(alpha = 0.15f), CircleShape)
+                            .border(2.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.test),
+                            contentDescription = "profile",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(140.dp)
+                                .clip(CircleShape)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -101,82 +110,105 @@ fun ProfileEditorPage(
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
-                GlassCard {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        GlassTextField(
-                            label = "ایمیل",
-                            value = state.user?.email ?: "",
-                            enabled = false,
-                            onValueChange = {}
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        GlassTextField(
-                            label = "نام کامل",
-                            value = state.profile?.fullName ?: "",
-                            onValueChange = {
-                                state.profile?.let { p ->
-                                    viewModel.handleIntent(ProfileEditorIntent.ChangeProfileField(p.copy(fullName = it)))
+                // Staggered Entrance for Cards
+                val contentAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                
+                AnimatedVisibility(
+                    visibleState = contentAnimState,
+                    enter = fadeIn(animationSpec = tween(600, delayMillis = 100)) + slideInVertically(animationSpec = tween(600, delayMillis = 100)) { it / 4 }
+                ) {
+                    GlassCard(opacity = 0.15f) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            GlassTextField(
+                                label = "ایمیل",
+                                value = state.user?.email ?: "",
+                                enabled = false,
+                                onValueChange = {}
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            GlassTextField(
+                                label = "نام کامل",
+                                value = state.profile?.fullName ?: "",
+                                onValueChange = {
+                                    state.profile?.let { p ->
+                                        viewModel.handleIntent(ProfileEditorIntent.ChangeProfileField(p.copy(fullName = it)))
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                GlassCard {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        GlassTextField(
-                            label = "نام کاربری",
-                            value = state.profile?.username ?: "",
-                            onValueChange = {
-                                state.profile?.let { p ->
-                                    viewModel.handleIntent(ProfileEditorIntent.ChangeProfileField(p.copy(username = it)))
+                AnimatedVisibility(
+                    visibleState = contentAnimState,
+                    enter = fadeIn(animationSpec = tween(600, delayMillis = 200)) + slideInVertically(animationSpec = tween(600, delayMillis = 200)) { it / 4 }
+                ) {
+                    GlassCard(opacity = 0.12f) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            GlassTextField(
+                                label = "نام کاربری",
+                                value = state.profile?.username ?: "",
+                                onValueChange = {
+                                    state.profile?.let { p ->
+                                        viewModel.handleIntent(ProfileEditorIntent.ChangeProfileField(p.copy(username = it)))
+                                    }
                                 }
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        GlassTextField(
-                            label = "شماره تلفن",
-                            value = state.user?.phone ?: "",
-                            onValueChange = {
-                                state.user?.let { u ->
-                                    viewModel.handleIntent(ProfileEditorIntent.ChangeUserInfoField(u.copy(phone = it)))
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            GlassTextField(
+                                label = "شماره تلفن",
+                                value = state.user?.phone ?: "",
+                                onValueChange = {
+                                    state.user?.let { u ->
+                                        viewModel.handleIntent(ProfileEditorIntent.ChangeUserInfoField(u.copy(phone = it)))
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                GlassCard {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        GlassTextField(
-                            label = "کد ملی",
-                            value = state.profile?.nationalId ?: "",
-                            onValueChange = {
-                                state.profile?.let { p ->
-                                    viewModel.handleIntent(ProfileEditorIntent.ChangeProfileField(p.copy(nationalId = it)))
+                AnimatedVisibility(
+                    visibleState = contentAnimState,
+                    enter = fadeIn(animationSpec = tween(600, delayMillis = 300)) + slideInVertically(animationSpec = tween(600, delayMillis = 300)) { it / 4 }
+                ) {
+                    GlassCard(opacity = 0.12f) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            GlassTextField(
+                                label = "کد ملی",
+                                value = state.profile?.nationalId ?: "",
+                                onValueChange = {
+                                    state.profile?.let { p ->
+                                        viewModel.handleIntent(ProfileEditorIntent.ChangeProfileField(p.copy(nationalId = it)))
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                GlassButton(
-                    text = "تایید و ذخیره",
-                    onClick = {
-                        state.profile?.let {
-                            viewModel.handleIntent(ProfileEditorIntent.SendProfileDate(it))
-                        }
-                    },
-                    isLoading = state.isLoading
-                )
-
-                Spacer(modifier = Modifier.height(200.dp))
+                AnimatedVisibility(
+                    visibleState = contentAnimState,
+                    enter = fadeIn(animationSpec = tween(600, delayMillis = 400))
+                ) {
+                    GlassButton(
+                        text = "تایید و ذخیره",
+                        onClick = {
+                            state.profile?.let {
+                                viewModel.handleIntent(ProfileEditorIntent.SendProfileDate(it))
+                            }
+                        },
+                        isLoading = state.isLoading
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(140.dp))
             }
         }
     }

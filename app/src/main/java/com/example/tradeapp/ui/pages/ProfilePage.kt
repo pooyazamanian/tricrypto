@@ -1,5 +1,7 @@
 package com.example.tradeapp.ui.pages
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,9 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,87 +49,122 @@ fun ProfilePage(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Profile Header Card
-        GlassCard(opacity = 0.15f) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
+        if (state.isLoading) {
+            ProfileShimmer()
+        } else {
+            // Profile Header Card
+            val headerAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+            AnimatedVisibility(
+                visibleState = headerAnimState,
+                enter = fadeIn(animationSpec = tween(600)) + expandVertically(animationSpec = tween(600))
             ) {
-                Image(
-                    painter = painterResource(R.drawable.test),
-                    contentDescription = "profile",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
-                )
-                Spacer(Modifier.width(20.dp))
-                Column {
-                    Text(
-                        text = state.profile?.fullName ?: "نام کاربر",
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = state.user?.email ?: "ایمیل یافت نشد",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                GlassCard(opacity = 0.15f) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.test),
+                            contentDescription = "profile",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.1f))
+                        )
+                        Spacer(Modifier.width(20.dp))
+                        Column {
+                            Text(
+                                text = state.profile?.fullName ?: "نام کاربر",
+                                color = Color.White,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = state.user?.email ?: "ایمیل یافت نشد",
+                                color = Color.White.copy(alpha = 0.7f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
             }
-        }
 
-        Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(20.dp))
 
-        // Personal Info Card
-        GlassCard(opacity = 0.12f) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                InfoRow(title = "نام کاربری", value = state.profile?.username ?: "-")
-                Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
-                InfoRow(title = "شماره تلفن", value = state.user?.phone ?: "-")
-                Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
-                InfoRow(title = "کد ملی", value = state.profile?.nationalId ?: "-")
-            }
-        }
-
-        Spacer(Modifier.height(32.dp))
-
-        // Actions
-        if (!state.isLoading && state.profile != null && state.user != null) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                GlassButton(
-                    text = "ویرایش پروفایل",
-                    onClick = {
-                        val profileJson = Json.encodeToString(state.profile)
-                        val profile = URLEncoder.encode(profileJson, StandardCharsets.UTF_8.toString())
-                        val userJson = Json.encodeToString(state.user)
-                        val user = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
-                        navigation.navigate("${NamePage.PROFILE_EDITOR}/${profile}/${user}")
+            // Personal Info Card
+            val infoAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+            AnimatedVisibility(
+                visibleState = infoAnimState,
+                enter = fadeIn(animationSpec = tween(600, delayMillis = 200)) + slideInVertically(animationSpec = tween(600, delayMillis = 200)) { it / 2 }
+            ) {
+                GlassCard(opacity = 0.12f) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        InfoRow(title = "نام کاربری", value = state.profile?.username ?: "-")
+                        Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+                        InfoRow(title = "شماره تلفن", value = state.user?.phone ?: "-")
+                        Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+                        InfoRow(title = "کد ملی", value = state.profile?.nationalId ?: "-")
                     }
-                )
+                }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(32.dp))
 
-                GlassButton(
-                    text = "خروج از حساب",
-                    onClick = { profileViewModel.logout() },
-                    containerColor = Color.White.copy(alpha = 0.1f),
-                    contentColor = Color(0xFFE94560)
-                )
+            // Actions
+            if (state.profile != null && state.user != null) {
+                val actionsAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                AnimatedVisibility(
+                    visibleState = actionsAnimState,
+                    enter = fadeIn(animationSpec = tween(600, delayMillis = 400))
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        GlassButton(
+                            text = "ویرایش پروفایل",
+                            onClick = {
+                                val profileJson = Json.encodeToString(state.profile)
+                                val profile = URLEncoder.encode(profileJson, StandardCharsets.UTF_8.toString())
+                                val userJson = Json.encodeToString(state.user)
+                                val user = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+                                navigation.navigate("${NamePage.PROFILE_EDITOR}/${profile}/${user}")
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        GlassButton(
+                            text = "خروج از حساب",
+                            onClick = { profileViewModel.logout() },
+                            containerColor = Color.White.copy(alpha = 0.1f),
+                            contentColor = Color(0xFFE94560)
+                        )
+                    }
+                }
             }
         }
         
         Spacer(modifier = Modifier.height(120.dp))
+    }
+}
+
+@Composable
+private fun ProfileShimmer() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        GlassShimmer(modifier = Modifier.fillMaxWidth().height(140.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+        GlassShimmer(modifier = Modifier.fillMaxWidth().height(200.dp))
+        Spacer(modifier = Modifier.height(32.dp))
+        GlassShimmer(modifier = Modifier.fillMaxWidth().height(56.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        GlassShimmer(modifier = Modifier.fillMaxWidth().height(56.dp))
     }
 }
 

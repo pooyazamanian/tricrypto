@@ -34,7 +34,6 @@ fun BasePage() {
                     containerColor = Color(0xFFE94560),
                     contentColor = Color.White,
                     shape = androidx.compose.foundation.shape.CircleShape,
-                    modifier = Modifier.padding(bottom = 32.dp) // Sit naturally above BottomBar
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add, 
