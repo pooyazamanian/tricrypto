@@ -1,210 +1,162 @@
 package com.example.tradeapp.ui.pages
 
-import android.util.EventLogTags
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tradeapp.R
 import androidx.navigation.NavHostController
-import com.example.tradeapp.ui.tools.MainCard
-import com.example.tradeapp.ui.tools.MainImportantButton
-import com.example.tradeapp.ui.tools.RowContent
-import com.example.tradeapp.utils.NamePage
+import com.example.tradeapp.ui.components.*
 
 @Composable
 fun FinalPaymentPage(navigator: NavHostController) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
-        verticalArrangement = Arrangement.Center,
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Image(painter = painterResource(R.drawable.logopayment), contentDescription = "")
+        Image(
+            painter = painterResource(R.drawable.logopayment), 
+            contentDescription = null,
+            modifier = Modifier.size(120.dp)
+        )
+        
         Text(
             text = "لطفا فرایند پرداخت را تکمیل کنید",
-            color = MaterialTheme.colorScheme.surfaceTint,
-            fontSize = 16.sp,
-            maxLines = 2,
-            fontWeight = FontWeight.ExtraBold,
-            textAlign = TextAlign.Center,
-            //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-            overflow = TextOverflow.Ellipsis
+            color = colorScheme.onSurface,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
         )
-        Spacer(
-            Modifier.size(30.dp)
-        )
-        TitleTImer()
-        Spacer(
-            Modifier.size(10.dp)
-        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        TitleTimer()
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
         ContentOfPayment()
-        Spacer(
-            Modifier.size(10.dp)
-        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
         DescriptionPart()
-        Spacer(
-            Modifier.size(10.dp)
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        GlassButton(
+            text = "تایید نهایی",
+            onClick = { navigator.popBackStack() }
         )
-        MainImportantButton(modifier = Modifier.padding(20.dp).fillMaxWidth(), text = "خرید"){
-        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
-
 @Composable
-fun TitleTImer() {
-    MainCard {
+private fun TitleTimer() {
+    val colorScheme = MaterialTheme.colorScheme
+    
+    GlassCard(opacity = 0.1f) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.fillMaxWidth(0.7f)) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "پیش پرداخت",
-                    color = MaterialTheme.colorScheme.background,
-                    fontSize = 13.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                    overflow = TextOverflow.Ellipsis
+                    text = "زمان باقی‌مانده",
+                    color = colorScheme.onSurface.copy(alpha = 0.6f),
+                    fontSize = 14.sp
                 )
-
                 Text(
-                    text = "یکشنبه، ۳۰ اکتبر ۲۰۲۲، ساعت ۱:۳۲ بعد از ظهر، WIB",
-                    color = MaterialTheme.colorScheme.background,
-                    fontSize = 10.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                    overflow = TextOverflow.Ellipsis
+                    text = "یکشنبه، ۳۰ اکتبر ۲۰۲۲",
+                    color = colorScheme.onSurface.copy(alpha = 0.4f),
+                    fontSize = 11.sp
                 )
             }
-
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        MaterialTheme.colorScheme.error,
-                        RoundedCornerShape(10.dp)
-                    ),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "00 : 08 : 46",
-                    color = MaterialTheme.colorScheme.background,
-                    fontSize = 13.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-
+            Text(
+                text = "08:46",
+                color = colorScheme.primary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black
+            )
         }
     }
 }
 
 @Composable
-fun DescriptionPart() {
-    MainCard {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.End
-            ) {
+private fun DescriptionPart() {
+    val colorScheme = MaterialTheme.colorScheme
+    
+    GlassCard(opacity = 0.08f) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = colorScheme.tertiary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "راهنمای پرداخت",
-                    color = MaterialTheme.colorScheme.background,
-                    fontSize = 13.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Text(
-                    text = "کد پرداخت بالا را یادداشت کنید و به نزدیکترین شعبه آلفامارت، آلفا میدی، لاوسون یا DAN+DAN مراجعه کنید.\n" +
-                            "\n" +
-                            "به صندوقدار اطلاع دهید که می\u200Cخواهید پرداخت انجام دهید.\n" +
-                            "\n" +
-                            "صندوقدار کد پرداخت را درخواست می\u200Cکند. کد پرداخت خود را ارائه دهید: 11111102XXXXXX. صندوقدار اطلاعات مشتری، از جمله نام فروشنده، نام مشتری و مبلغ را تأیید می\u200Cکند. مبلغ مشخص شده را به صندوقدار پرداخت کنید.\n" +
-                            "\n" +
-                            "رسید را به عنوان مدرک پرداخت موفقیت\u200Cآمیز دریافت کنید. فروشنده بلافاصله اعلان پرداخت را دریافت خواهد کرد.\n" +
-                            "\n" +
-                            "تکمیل شد",
-                    color = MaterialTheme.colorScheme.background,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Justify,
-                    //            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                    overflow = TextOverflow.Ellipsis
+                    color = colorScheme.onSurface,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
-    }
-}
-
-
-@Composable
-fun ContentOfPayment() {
-    MainCard {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            RowContent("شماره معامله", "FD8U4J38J004093J8U80TJ039")
-            Spacer(
-                Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "کد پرداخت بالا را یادداشت کنید و به نزدیکترین شعبه مراجعه کنید. مبالغ را به دقت بررسی کنید.",
+                color = colorScheme.onSurface.copy(alpha = 0.7f),
+                fontSize = 12.sp,
+                lineHeight = 18.sp
             )
-            RowContent("میزان معامله", "FD8U4J38J004093J0TJ039")
-            Spacer(
-                Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(MaterialTheme.colorScheme.primary)
-            )
-            RowContent("کد پرداخت", "FD8U4J38TJ039")
         }
     }
 }
 
+@Composable
+private fun ContentOfPayment() {
+    val colorScheme = MaterialTheme.colorScheme
+    
+    GlassCard(opacity = 0.12f) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            PaymentRow(label = "شماره معامله", value = "FD8U4J38J004093J8U80TJ039")
+            Divider(color = colorScheme.onSurface.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+            PaymentRow(label = "میزان معامله", value = "2,000,000 تومان")
+            Divider(color = colorScheme.onSurface.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+            PaymentRow(label = "کد پرداخت", value = "FD8U4J38TJ039")
+        }
+    }
+}
 
+@Composable
+private fun PaymentRow(label: String, value: String) {
+    val colorScheme = MaterialTheme.colorScheme
+    
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = label, color = colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 14.sp)
+        Text(text = value, color = colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun Divider(color: Color, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxWidth().height(1.dp).background(color))
+}

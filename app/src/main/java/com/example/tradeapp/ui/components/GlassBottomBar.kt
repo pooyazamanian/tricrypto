@@ -6,12 +6,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,14 +24,16 @@ fun GlassBottomBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
             .height(84.dp)
             .clip(RoundedCornerShape(28.dp))
-            .background(Color.White.copy(alpha = 0.12f))
-            .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(28.dp))
+            .background(colorScheme.onSurface.copy(alpha = 0.12f))
+            .border(1.dp, colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(28.dp))
             .padding(horizontal = 8.dp)
     ) {
         Row(
@@ -61,7 +63,7 @@ fun GlassBottomBar(
                 onClick = { onNavigate(NamePage.WALLET) }
             )
             BottomNavItem(
-                icon = R.drawable.cardreceive, // Using this for Payment as a placeholder if rial icon is not found
+                icon = R.drawable.cardreceive,
                 selectedIcon = R.drawable.cardreceive,
                 label = "Payment",
                 isSelected = currentRoute == NamePage.PAYMENT,
@@ -86,6 +88,8 @@ private fun BottomNavItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -97,13 +101,13 @@ private fun BottomNavItem(
         Icon(
             painter = painterResource(if (isSelected) selectedIcon else icon),
             contentDescription = label,
-            tint = if (isSelected) Color(0xFFE94560) else Color.White.copy(alpha = 0.8f),
+            tint = if (isSelected) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0.8f),
             modifier = Modifier.size(26.dp)
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
-            color = if (isSelected) Color(0xFFE94560) else Color.White.copy(alpha = 0.8f),
+            color = if (isSelected) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0.8f),
             fontSize = 11.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
         )

@@ -52,6 +52,7 @@ fun HomePage(
     val trends = marketTrendsState.trendsData.dataOrCached()
     val isLoadingMarketTrends = marketTrendsState.trendsData is UiStateWithCatch.Loading
     val isLoadingWatchlist = watchlistState.watchlistData is UiStateWithCatch.Loading
+    val colorScheme = MaterialTheme.colorScheme
     
     val scrollState = rememberScrollState()
 
@@ -84,7 +85,7 @@ fun HomePage(
                     ) {
                         Text(
                             text = "حساب شما",
-                            color = Color.White.copy(alpha = 0.7f),
+                            color = colorScheme.onSurface.copy(alpha = 0.7f),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -92,14 +93,14 @@ fun HomePage(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = "1,000,000,000",
-                                color = Color.White,
+                                color = colorScheme.onSurface,
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "تومان",
-                                color = Color.White.copy(alpha = 0.9f),
+                                color = colorScheme.onSurface.copy(alpha = 0.9f),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -109,13 +110,13 @@ fun HomePage(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = null,
-                                tint = Color(0xFF4CAF50),
+                                tint = colorScheme.tertiary,
                                 modifier = Modifier.size(16.dp).rotate(90f)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "5,000 (100%)",
-                                color = Color(0xFF4CAF50),
+                                color = colorScheme.tertiary,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -132,8 +133,8 @@ fun HomePage(
                     text = "برداشت",
                     onClick = { },
                     modifier = Modifier.weight(1f),
-                    containerColor = Color.White.copy(alpha = 0.1f),
-                    contentColor = Color.White
+                    containerColor = colorScheme.onSurface.copy(alpha = 0.1f),
+                    contentColor = colorScheme.onSurface
                 )
                 GlassButton(
                     text = "پرداخت",
@@ -147,7 +148,7 @@ fun HomePage(
             // Market Trends
             Text(
                 text = "ترند های امروز:",
-                color = Color.White,
+                color = colorScheme.onSurface,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -193,7 +194,7 @@ fun HomePage(
             // Watchlist
             Text(
                 text = "فهرست پیگیری های من:",
-                color = Color.White,
+                color = colorScheme.onSurface,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -233,21 +234,25 @@ fun HomePage(
 
 @Composable
 private fun TrendCard(name: String, symbol: String, price: String, onClick: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     GlassCard(
         modifier = Modifier.width(140.dp).clickable(onClick = onClick),
         opacity = 0.12f
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = symbol, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text(text = name, color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
+            Text(text = symbol, color = colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(text = name, color = colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "$price $", color = Color(0xFFE94560), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(text = "$price $", color = colorScheme.primary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
 
 @Composable
 private fun WatchlistItemCard(name: String, symbol: String, price: String, logoUrl: String?, onClick: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     GlassCard(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         opacity = 0.1f
@@ -260,7 +265,7 @@ private fun WatchlistItemCard(name: String, symbol: String, price: String, logoU
             AsyncImage(
                 model = logoUrl,
                 contentDescription = name,
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)),
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(colorScheme.onSurface.copy(alpha = 0.1f)),
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(R.drawable.test),
                 error = painterResource(R.drawable.test)
@@ -269,21 +274,21 @@ private fun WatchlistItemCard(name: String, symbol: String, price: String, logoU
             Spacer(modifier = Modifier.width(16.dp))
             
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = symbol, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text(text = name, color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
+                Text(text = symbol, color = colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = name, color = colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
             }
             
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "$price $", 
-                    color = Color.White, 
+                    color = colorScheme.onSurface, 
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.End
                 )
                 Text(
                     text = "+2.45%", // Placeholder for trend value if needed
-                    color = Color(0xFF4CAF50),
+                    color = colorScheme.tertiary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )

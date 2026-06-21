@@ -45,6 +45,7 @@ fun WalletPage(
     val userAssetState by userAssetViewModel.state.collectAsState()
     val assetState by assetViewModel.state.collectAsState()
     val marketTrendsState by marketTrendsViewModel.state.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
     
     val trends = marketTrendsState.trendsData.dataOrCached()
 
@@ -89,7 +90,7 @@ fun WalletPage(
                 item {
                     Text(
                         text = "دارایی‌های شما",
-                        color = Color.White.copy(alpha = 0.8f),
+                        color = colorScheme.onSurface.copy(alpha = 0.8f),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(vertical = 8.dp)
@@ -133,6 +134,8 @@ fun WalletPage(
 
 @Composable
 fun WalletHeader(balanceUsd: Double) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     GlassCard(opacity = 0.15f) {
         Column(
             modifier = Modifier
@@ -142,21 +145,21 @@ fun WalletHeader(balanceUsd: Double) {
         ) {
             Text(
                 text = "موجودی کل کل",
-                color = Color.White.copy(alpha = 0.7f),
+                color = colorScheme.onSurface.copy(alpha = 0.7f),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "$${String.format("%.2f", balanceUsd)}",
-                color = Color.White,
+                color = colorScheme.onSurface,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Black
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "≈ ${String.format("%,d", (balanceUsd * 70000).toLong())} تومان",
-                color = Color.White.copy(alpha = 0.6f),
+                color = colorScheme.onSurface.copy(alpha = 0.6f),
                 fontSize = 16.sp
             )
             
@@ -169,13 +172,13 @@ fun WalletHeader(balanceUsd: Double) {
                 ActionButton(
                     text = "واریز",
                     icon = Icons.Default.KeyboardArrowDown,
-                    color = Color(0xFF4CAF50),
+                    color = colorScheme.tertiary,
                     modifier = Modifier.weight(1f)
                 )
                 ActionButton(
                     text = "برداشت",
                     icon = Icons.Default.KeyboardArrowUp,
-                    color = Color(0xFFE94560),
+                    color = colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -185,6 +188,8 @@ fun WalletHeader(balanceUsd: Double) {
 
 @Composable
 fun PortfolioBreakdown(userAssets: List<com.example.tradeapp.dto.UserAsset>, trends: List<com.example.tradeapp.models.MarketTrend>?) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     GlassCard(opacity = 0.1f) {
         Row(
             modifier = Modifier
@@ -201,7 +206,7 @@ fun PortfolioBreakdown(userAssets: List<com.example.tradeapp.dto.UserAsset>, tre
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "توزیع دارایی‌ها",
-                        color = Color.White,
+                        color = colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -211,15 +216,15 @@ fun PortfolioBreakdown(userAssets: List<com.example.tradeapp.dto.UserAsset>, tre
                             .fillMaxWidth()
                             .height(8.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
+                            .background(colorScheme.onSurface.copy(alpha = 0.1f))
                     ) {
                         userAssets.take(4).forEachIndexed { index, ua ->
                             val price = trends?.find { it.asset?.id == ua.assetId }?.price ?: 0.0
                             val weight = (((ua.quantity ?: 0.0) * price) / totalValue).toFloat()
                             val color = when(index) {
-                                0 -> Color(0xFFE94560)
-                                1 -> Color(0xFF4CAF50)
-                                2 -> Color(0xFF2196F3)
+                                0 -> colorScheme.primary
+                                1 -> colorScheme.tertiary
+                                2 -> colorScheme.secondary
                                 else -> Color(0xFFFFC107)
                             }
                             Box(
@@ -234,7 +239,7 @@ fun PortfolioBreakdown(userAssets: List<com.example.tradeapp.dto.UserAsset>, tre
             } else {
                 Text(
                     text = "هنوز دارایی ندارید",
-                    color = Color.White.copy(alpha = 0.5f),
+                    color = colorScheme.onSurface.copy(alpha = 0.5f),
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
@@ -251,6 +256,8 @@ fun AssetWalletCard(
     logoUrl: String?,
     onClick: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     GlassCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -269,7 +276,7 @@ fun AssetWalletCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.1f)),
+                    .background(colorScheme.onSurface.copy(alpha = 0.1f)),
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(R.drawable.test),
                 error = painterResource(R.drawable.test)
@@ -280,13 +287,13 @@ fun AssetWalletCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = symbol,
-                    color = Color.White,
+                    color = colorScheme.onSurface,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = name,
-                    color = Color.White.copy(alpha = 0.6f),
+                    color = colorScheme.onSurface.copy(alpha = 0.6f),
                     fontSize = 14.sp
                 )
             }
@@ -294,13 +301,13 @@ fun AssetWalletCard(
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = String.format("%.4f", amount),
-                    color = Color.White,
+                    color = colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "$${String.format("%.2f", amount * price)}",
-                    color = Color.White.copy(alpha = 0.7f),
+                    color = colorScheme.onSurface.copy(alpha = 0.7f),
                     fontSize = 14.sp
                 )
             }
@@ -330,7 +337,7 @@ fun ActionButton(
         ) {
             Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = text, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(text = text, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

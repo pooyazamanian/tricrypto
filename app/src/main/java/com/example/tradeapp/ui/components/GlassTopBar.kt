@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,11 +31,13 @@ import com.example.tradeapp.R
 
 @Composable
 fun GlassTopBar() {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.12f)) // Slightly more solid
-            .drawBehindBorder(Color.White.copy(alpha = 0.2f))
+            .background(colorScheme.onSurface.copy(alpha = 0.12f))
+            .drawBehindBorder(colorScheme.onSurface.copy(alpha = 0.2f))
             .statusBarsPadding()
             .padding(vertical = 12.dp)
     ) {
@@ -70,17 +73,19 @@ fun GlassTopBar() {
 
 @Composable
 private fun SelectionChip(label: String) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = Modifier
             .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.2f))
-            .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape)
+            .background(colorScheme.onSurface.copy(alpha = 0.2f))
+            .border(1.dp, colorScheme.onSurface.copy(alpha = 0.3f), CircleShape)
             .padding(vertical = 8.dp, horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = label,
-            color = Color.White,
+            color = colorScheme.onSurface,
             fontSize = 13.sp,
             fontWeight = FontWeight.Bold
         )
@@ -89,12 +94,14 @@ private fun SelectionChip(label: String) {
 
 @Composable
 private fun StatusCard(title: String, value: String) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = Modifier
             .width(160.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White.copy(alpha = 0.15f))
-            .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
+            .background(colorScheme.onSurface.copy(alpha = 0.15f))
+            .border(1.dp, colorScheme.onSurface.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -102,13 +109,13 @@ private fun StatusCard(title: String, value: String) {
                 modifier = Modifier
                     .size(30.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF4CAF50).copy(alpha = 0.25f)),
+                    .background(colorScheme.tertiary.copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = null,
-                    tint = Color(0xFF4CAF50),
+                    tint = colorScheme.tertiary,
                     modifier = Modifier.size(18.dp).rotate(90f)
                 )
             }
@@ -116,7 +123,7 @@ private fun StatusCard(title: String, value: String) {
             Column {
                 Text(
                     text = title,
-                    color = Color.White,
+                    color = colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
@@ -124,7 +131,7 @@ private fun StatusCard(title: String, value: String) {
                 )
                 Text(
                     text = value,
-                    color = Color(0xFF4CAF50),
+                    color = colorScheme.tertiary,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Black
                 )

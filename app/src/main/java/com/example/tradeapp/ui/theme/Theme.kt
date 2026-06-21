@@ -1,59 +1,62 @@
 package com.example.tradeapp.ui.theme
 
-import android.app.Activity
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
+@Immutable
+data class GlassCustomColors(
+    val backgroundGradientStart: Color = GlassDeepBlue,
+    val backgroundGradientMiddle: Color = GlassNavy,
+    val backgroundGradientEnd: Color = GlassDarkBlue,
+    val backgroundCirclePink: Color = GlassPink,
+    val backgroundCircleBlue: Color = GlassDarkBlue,
+    val cardBackground: Color = Color.White,
+    val cardBorder: Color = Color.White,
+    val textFieldIndicator: Color = GlassPink,
+    val pullToRefreshContainer: Color = GlassNavy,
+    val pullToRefreshContent: Color = GlassPink
+)
+
+val LocalGlassCustomColors = staticCompositionLocalOf { GlassCustomColors() }
+
+val MaterialTheme.glassColors: GlassCustomColors
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalGlassCustomColors.current
+
 private val DarkColorScheme = darkColorScheme(
-    primary = purple,
-    secondary = darkPurple,
-    tertiary = green,
-    error = red,
-    surfaceTint = lightGreen,
-    onSurfaceVariant = gray,
-    onSurface = textColorWhite,
-    inverseSurface = PurpleGrey40,
-    )
-
-private val LightColorScheme = lightColorScheme(
-    primary = purple,
-    secondary = darkPurple,
-    tertiary = green,
-    error = red,
-    surfaceTint = lightGreen,
-    onSurfaceVariant = gray,
-    onSurface = textColorWhite,
-        inverseSurface = PurpleGrey40,
-
-
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = GlassPink,
+    secondary = GlassBlue,
+    tertiary = GlassGreen,
+    background = GlassDeepBlue,
+    surface = GlassNavy,
+    error = GlassPink,
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    onBackground = Color.White,
+    onSurface = Color.White,
+    onSurfaceVariant = Color.White.copy(alpha = 0.6f),
+    surfaceTint = GlassGreen,
+    inverseSurface = GlassNavy
 )
 
-
-val darkGray = Color(0xFF1A1A1A)
+private val LightColorScheme = DarkColorScheme // Liquid Glass is inherently dark themed
 
 @Composable
 fun TradeAppTheme(
-    //    darkTheme: Boolean = isSystemInDarkTheme(),
-    darkTheme:Boolean = false,
-    // Dynamic color is available on Android 12+
+    darkTheme: Boolean = true,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -62,14 +65,15 @@ fun TradeAppTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(LocalGlassCustomColors provides GlassCustomColors()) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

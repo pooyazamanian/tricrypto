@@ -40,6 +40,7 @@ fun ProfilePage(
 ) {
     val state by profileViewModel.state.collectAsState()
     val scrollState = rememberScrollState()
+    val colorScheme = MaterialTheme.colorScheme
     
     GlassPullToRefreshBox(
         isRefreshing = state.isRefreshing,
@@ -76,13 +77,13 @@ fun ProfilePage(
                                 modifier = Modifier
                                     .size(100.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.1f))
+                                    .background(colorScheme.onSurface.copy(alpha = 0.1f))
                             )
                             Spacer(Modifier.width(20.dp))
                             Column {
                                 Text(
                                     text = state.profile?.fullName ?: "نام کاربر",
-                                    color = Color.White,
+                                    color = colorScheme.onSurface,
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1,
@@ -91,7 +92,7 @@ fun ProfilePage(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = state.user?.email ?: "ایمیل یافت نشد",
-                                    color = Color.White.copy(alpha = 0.7f),
+                                    color = colorScheme.onSurface.copy(alpha = 0.7f),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
                                     maxLines = 1,
@@ -113,15 +114,15 @@ fun ProfilePage(
                     GlassCard(opacity = 0.12f) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             InfoRow(title = "نام کاربری", value = state.profile?.username ?: "-")
-                            Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+                            Divider(color = colorScheme.onSurface.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
                             InfoRow(title = "شماره تلفن", value = state.user?.phone ?: "-")
-                            Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+                            Divider(color = colorScheme.onSurface.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
                             InfoRow(title = "کد ملی", value = state.profile?.nationalId ?: "-")
                         }
                     }
                 }
 
-                Spacer(Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Actions
                 if (state.profile != null && state.user != null) {
@@ -147,8 +148,8 @@ fun ProfilePage(
                             GlassButton(
                                 text = "خروج از حساب",
                                 onClick = { profileViewModel.logout() },
-                                containerColor = Color.White.copy(alpha = 0.1f),
-                                contentColor = Color(0xFFE94560)
+                                containerColor = colorScheme.onSurface.copy(alpha = 0.1f),
+                                contentColor = colorScheme.primary
                             )
                         }
                     }
@@ -182,13 +183,13 @@ private fun InfoRow(title: String, value: String) {
     ) {
         Text(
             text = title,
-            color = Color.White.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium
         )
         Text(
             text = value,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold
         )

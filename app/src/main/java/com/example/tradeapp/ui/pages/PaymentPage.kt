@@ -1,18 +1,11 @@
 package com.example.tradeapp.ui.pages
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
@@ -24,16 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.tradeapp.R
-import com.example.tradeapp.ui.tools.MainImportantButton
-import com.example.tradeapp.ui.tools.OutLineImportantButton
-import com.example.tradeapp.ui.tools.OutLineImportantWithImageButton
+import com.example.tradeapp.ui.components.*
 import com.example.tradeapp.utils.NamePage
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -41,156 +31,142 @@ import com.example.tradeapp.utils.NamePage
 fun PaymentPage(
     navigation: NavHostController
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            Modifier
-                .padding(15.dp), verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.End
-        ){
-            Text(
-                text = "روش پرداخت",
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 16.sp,
-                maxLines = 2,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                overflow = TextOverflow.Ellipsis
-            )
-            OutLineImportantWithImageButton(
+    val colorScheme = MaterialTheme.colorScheme
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.End
+    ) {
+        Text(
+            text = "روش پرداخت",
+            color = colorScheme.onSurface,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        GlassCard(opacity = 0.1f) {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 10.dp),
-                "fjashf",
-                Color.White,
-                R.drawable.bankcard,
-                onclick = {
-                    navigation.navigate(NamePage.PAYMENT)
-                }
-
+                    .clickable { navigation.navigate(NamePage.PAYMENT) }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "انتخاب شده",
-                    color = MaterialTheme.colorScheme.surfaceTint,
+                    color = colorScheme.tertiary,
                     fontSize = 14.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = FontWeight.Bold
                 )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "کارت بانکی", color = colorScheme.onSurface)
+                    Spacer(Modifier.width(12.dp))
+                    Image(
+                        painter = painterResource(R.drawable.bankcard),
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Row(
             Modifier
                 .fillMaxWidth()
-                .height(50.dp)
-                .background(MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.5f))
-                .padding(5.dp),
+                .height(64.dp)
+                .clip(CircleShape)
+                .background(colorScheme.onSurface.copy(alpha = 0.05f))
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
-        )
-        {
-            Row(
-                modifier = Modifier
-                    .border(1.dp, Color.White, CircleShape)
-                    .size(30.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceTint),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "1",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
+        ) {
+            StepIndicator(number = "1", isSelected = true)
             Text(
                 text = "انتخاب مبلغ",
-                color = MaterialTheme.colorScheme.surfaceTint,
+                color = colorScheme.tertiary,
                 fontSize = 14.sp,
-                maxLines = 2,
-                modifier = Modifier.padding(5.dp),
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                overflow = TextOverflow.Ellipsis
+                modifier = Modifier.padding(horizontal = 8.dp),
+                fontWeight = FontWeight.Bold
             )
-            Spacer(Modifier.padding(10.dp).width(50.dp).height(2.dp).background(MaterialTheme.colorScheme.surface))
-            Row(
-                modifier = Modifier
-                    .border(1.dp, Color.White, CircleShape)
-                    .size(30.dp)
-                    .clip(CircleShape)
-                    .background(Color.Transparent),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "2",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
+            Spacer(Modifier.width(32.dp).height(2.dp).background(colorScheme.onSurface.copy(alpha = 0.2f)))
+            StepIndicator(number = "2", isSelected = false)
             Text(
                 text = "پرداخت",
-                color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier.padding(5.dp),
+                color = colorScheme.onSurface.copy(alpha = 0.4f),
+                modifier = Modifier.padding(horizontal = 8.dp),
                 fontSize = 14.sp,
-                maxLines = 2,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-//            fontFamily = FontFamily(Font(R.font.iranyekanmedium)),
-                overflow = TextOverflow.Ellipsis
+                fontWeight = FontWeight.Bold
             )
-
         }
-        Column(
-            Modifier.fillMaxWidth()
-                .padding(15.dp), verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.End
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = "مبلغ شارژ را انتخاب کنید",
+            color = colorScheme.onSurface,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
         )
-        {
-            Text(
-                text = "مبلغ شارژ را انتخاب کنید",
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 16.sp,
-                maxLines = 2,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                overflow = TextOverflow.Ellipsis
-            )
 
-        }
-        val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp -30.dp
+        Spacer(modifier = Modifier.height(16.dp))
+
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(screenWidthDp/3),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max= 1000.dp),
-            horizontalArrangement = Arrangement.Center,
+            columns = GridCells.Fixed(3),
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(6) {
-                OutLineImportantButton(
-                    modifier = Modifier.padding(10.dp),
-                    color = Color.White,
-                    text = "2000"
-
-                )
+                SelectionAmountCard(amount = "2000")
             }
-
-        }
-        MainImportantButton(modifier = Modifier.padding(20.dp).fillMaxWidth(), text = "خرید"){
-            navigation.navigate(NamePage.FINAL_PAYMENT)
         }
 
+        GlassButton(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), 
+            text = "خرید",
+            onClick = { navigation.navigate(NamePage.FINAL_PAYMENT) }
+        )
     }
+}
 
+@Composable
+private fun StepIndicator(number: String, isSelected: Boolean) {
+    val colorScheme = MaterialTheme.colorScheme
+    
+    Box(
+        modifier = Modifier
+            .size(28.dp)
+            .clip(CircleShape)
+            .background(if (isSelected) colorScheme.tertiary else Color.Transparent)
+            .border(1.dp, colorScheme.onSurface.copy(alpha = 0.5f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = number,
+            color = colorScheme.onSurface,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
 
-
-
+@Composable
+private fun SelectionAmountCard(amount: String) {
+    val colorScheme = MaterialTheme.colorScheme
+    
+    GlassCard(opacity = 0.1f) {
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = amount, color = colorScheme.onSurface, fontWeight = FontWeight.Bold)
+        }
+    }
 }

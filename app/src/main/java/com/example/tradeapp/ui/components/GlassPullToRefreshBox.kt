@@ -7,7 +7,7 @@ import androidx.compose.material3.pulltorefresh.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import com.example.tradeapp.ui.theme.glassColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,6 +18,7 @@ fun GlassPullToRefreshBox(
     content: @Composable () -> Unit
 ) {
     val state = rememberPullToRefreshState()
+    val glassColors = MaterialTheme.glassColors
     
     Box(
         modifier = modifier
@@ -34,8 +35,8 @@ fun GlassPullToRefreshBox(
             state = state,
             isRefreshing = isRefreshing,
             modifier = Modifier.align(Alignment.TopCenter),
-            containerColor = Color(0xFF16213E).copy(alpha = 0.9f),
-            color = Color(0xFFE94560)
+            containerColor = glassColors.pullToRefreshContainer.copy(alpha = 0.9f),
+            color = glassColors.pullToRefreshContent
         )
     }
 }

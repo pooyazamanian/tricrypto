@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
@@ -33,7 +32,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.tradeapp.R
 import com.example.tradeapp.ui.components.*
-import com.example.tradeapp.utils.NamePage
 import com.example.tradeapp.viewmodel.MarketTrendsViewModel
 import com.example.tradeapp.viewmodel.OrderViewModel
 import com.example.tradeapp.viewmodel.TradeListViewModel
@@ -152,6 +150,8 @@ fun TradePage(
 
 @Composable
 fun SectionHeader(title: String, icon: Any) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth(),
@@ -159,20 +159,22 @@ fun SectionHeader(title: String, icon: Any) {
     ) {
         Text(
             text = title,
-            color = Color.White,
+            color = colorScheme.onSurface,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.width(12.dp))
         when (icon) {
-            is androidx.compose.ui.graphics.vector.ImageVector -> Icon(imageVector = icon, contentDescription = null, tint = Color(0xFFE94560), modifier = Modifier.size(24.dp))
-            is androidx.compose.ui.graphics.painter.Painter -> Icon(painter = icon, contentDescription = null, tint = Color(0xFFE94560), modifier = Modifier.size(24.dp))
+            is androidx.compose.ui.graphics.vector.ImageVector -> Icon(imageVector = icon, contentDescription = null, tint = colorScheme.primary, modifier = Modifier.size(24.dp))
+            is androidx.compose.ui.graphics.painter.Painter -> Icon(painter = icon, contentDescription = null, tint = colorScheme.primary, modifier = Modifier.size(24.dp))
         }
     }
 }
 
 @Composable
 fun MarketPairCard(symbol: String, price: Double, change: Double, onClick: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     GlassCard(
         modifier = Modifier
             .width(160.dp)
@@ -180,18 +182,18 @@ fun MarketPairCard(symbol: String, price: Double, change: Double, onClick: () ->
         opacity = 0.15f
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "$symbol/USDT", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(text = "$symbol/USDT", color = colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "$${String.format("%.2f", price)}", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
+            Text(text = "$${String.format("%.2f", price)}", color = colorScheme.onSurface, fontSize = 18.sp, fontWeight = FontWeight.Black)
             Text(
                 text = "${if (change > 0) "+" else ""}$change%",
-                color = if (change > 0) Color(0xFF4CAF50) else Color(0xFFE94560),
+                color = if (change > 0) colorScheme.tertiary else colorScheme.primary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(12.dp))
             // Mock Sparkline
-            Sparkline(color = if (change > 0) Color(0xFF4CAF50) else Color(0xFFE94560))
+            Sparkline(color = if (change > 0) colorScheme.tertiary else colorScheme.primary)
         }
     }
 }
@@ -218,6 +220,8 @@ fun Sparkline(color: Color) {
 
 @Composable
 fun OrderCard(order: com.example.tradeapp.models.Order) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     GlassCard(opacity = 0.12f) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -230,23 +234,23 @@ fun OrderCard(order: com.example.tradeapp.models.Order) {
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(if (order.orderType == OrderType.BUY) Color(0xFF4CAF50) else Color(0xFFE94560))
+                            .background(if (order.orderType == OrderType.BUY) colorScheme.tertiary else colorScheme.primary)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = if (order.orderType == OrderType.BUY) "خرید" else "فروش",
-                        color = if (order.orderType == OrderType.BUY) Color(0xFF4CAF50) else Color(0xFFE94560),
+                        color = if (order.orderType == OrderType.BUY) colorScheme.tertiary else colorScheme.primary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = order.asset?.symbol ?: "", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(text = order.asset?.symbol ?: "", color = colorScheme.onSurface, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
             
             Column(horizontalAlignment = Alignment.Start) {
-                Text(text = "مقدار: ${order.quantity}", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
-                Text(text = "قیمت: $${order.price}", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = "مقدار: ${order.quantity}", color = colorScheme.onSurface.copy(alpha = 0.8f), fontSize = 14.sp)
+                Text(text = "قیمت: $${order.price}", color = colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -254,6 +258,8 @@ fun OrderCard(order: com.example.tradeapp.models.Order) {
 
 @Composable
 fun RecentTradeCard(trade: com.example.tradeapp.models.Trade) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -262,30 +268,31 @@ fun RecentTradeCard(trade: com.example.tradeapp.models.Trade) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(text = trade.asset?.symbol ?: "", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            // No createdAt in domain model Trade
+            Text(text = trade.asset?.symbol ?: "", color = colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
         
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = "${trade.quantity}",
-                color = Color.White,
+                color = colorScheme.onSurface,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
-            Text(text = "$${trade.price}", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+            Text(text = "$${trade.price}", color = colorScheme.onSurface.copy(alpha = 0.7f), fontSize = 12.sp)
         }
     }
 }
 
 @Composable
 fun EmptyStateCard(text: String) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     GlassCard(opacity = 0.05f) {
         Box(
             modifier = Modifier.fillMaxWidth().padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = text, color = Color.White.copy(alpha = 0.4f), fontSize = 14.sp)
+            Text(text = text, color = colorScheme.onSurface.copy(alpha = 0.4f), fontSize = 14.sp)
         }
     }
 }
