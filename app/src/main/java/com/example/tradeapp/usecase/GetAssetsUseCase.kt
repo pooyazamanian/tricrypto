@@ -13,7 +13,6 @@ class GetAssetsUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(): Result<List<AssetDto>> {
         return try {
-            repository.getAssets()
             val res = repository.getAssets()
             Log.e("getAssets()",res.toString())
             res

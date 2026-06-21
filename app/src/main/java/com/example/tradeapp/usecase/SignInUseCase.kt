@@ -7,10 +7,10 @@ import com.example.tradeapp.damin.util.Result
 class SignInUseCase @Inject constructor(
     private val repository: AuthenticationRepository
 ) {
-    suspend operator fun invoke(email: String, password: String): Result<Boolean> {
+    suspend operator fun invoke(email: String, password: String): Result<Unit> {
         return try {
             val success = repository.signIn(email, password)
-            Result.Success(success)
+            success
         } catch (e: Exception) {
             Result.Error(Exception("Sign in failed: ${e.message}", e))
         }

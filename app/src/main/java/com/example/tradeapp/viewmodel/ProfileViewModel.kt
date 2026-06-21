@@ -2,13 +2,12 @@ package com.example.tradeapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tradeapp.damin.session.SessionManager
 import com.example.tradeapp.damin.util.Result
 import com.example.tradeapp.usecase.GetProfileUseCase
 import com.example.tradeapp.viewmodel.intent.ProfileIntent
 import com.example.tradeapp.viewmodel.state.ProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,17 +19,14 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-
-    private val supabase: SupabaseClient
+    private val sessionManager: SessionManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 
-
     val userId: UUID? by lazy {
-        supabase.auth.currentSessionOrNull()?.user?.id?.let { UUID.fromString(it) }
+        sessionManager.getCurrentUser()?.id?.let { UUID.fromString(it) }
     }
-
 
     init {
         handleIntent(ProfileIntent.LoadProfile)
@@ -49,14 +45,20 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun logout() {
+        viewModelScope.launch {
+            sessionManager.logout()
+        }
+    }
+
     private fun loadUser() {
         viewModelScope.launch {
-            val session = supabase.auth.currentSessionOrNull()?.user
+            val user = sessionManager.getCurrentUser()
 
-             if (session != null) {
+             if (user != null) {
                  _state.update {
                      it.copy(
-                         user = session,
+                         user = user,
                          error = null
                      )
                  }

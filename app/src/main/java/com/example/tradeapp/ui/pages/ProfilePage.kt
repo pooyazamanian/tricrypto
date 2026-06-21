@@ -130,19 +130,30 @@ fun ProfilePage(
             }
         }
         if(!state.isLoading && state.profile != null && state.user != null){
-            MainImportantButton(
-                modifier = Modifier
-                    .padding(20.dp)
-                    .fillMaxWidth(),
-                text = "ویرایش پروفایل"
-            ) {
-                val profileJson = Json.encodeToString(state.profile)
-                val profile = URLEncoder.encode(profileJson, StandardCharsets.UTF_8.toString())
-                val userJson = Json.encodeToString(state.user)
-                val user = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
-                navigation.navigate(
-                    "${NamePage.PROFILE_EDITOR}/${profile}/${user}"
-                )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                MainImportantButton(
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .fillMaxWidth(),
+                    text = "ویرایش پروفایل"
+                ) {
+                    val profileJson = Json.encodeToString(state.profile)
+                    val profile = URLEncoder.encode(profileJson, StandardCharsets.UTF_8.toString())
+                    val userJson = Json.encodeToString(state.user)
+                    val user = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+                    navigation.navigate(
+                        "${NamePage.PROFILE_EDITOR}/${profile}/${user}"
+                    )
+                }
+
+                MainImportantButton(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .fillMaxWidth(),
+                    text = "خروج از حساب"
+                ) {
+                    profileViewModel.logout()
+                }
             }
         }
 
