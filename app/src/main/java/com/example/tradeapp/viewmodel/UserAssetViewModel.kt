@@ -45,22 +45,34 @@ class UserAssetViewModel @Inject constructor(
         }
     }
 
+    fun refreshData() {
+        viewModelScope.launch {
+            _state.update { it.copy(isRefreshing = true) }
+            fetchUserAssets()
+            _state.update { it.copy(isRefreshing = false) }
+        }
+    }
+
     private fun loadUserAssets() {
         viewModelScope.launch {
-            userId?.let { id ->
-                _state.update { it.copy(isLoading = true) }
-                when (val result = getUserAssetsUseCase(id)) {
-                    is Result.Success -> {
-                        _state.update {
-                            it.copy(isLoading = false, userAssets = result.data, error = null)
-                        }
+            fetchUserAssets()
+        }
+    }
+
+    private suspend fun fetchUserAssets() {
+        userId?.let { id ->
+            _state.update { it.copy(isLoading = _state.value.userAssets.isEmpty()) }
+            when (val result = getUserAssetsUseCase(id)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(isLoading = false, userAssets = result.data, error = null)
                     }
-                    is Result.Error -> {
-                        _state.update {
-                            it.copy(isLoading = false, error = result.exception.message)
-                        }
-                        _effect.send(UserAssetEffect.ShowError(result.exception.message ?: "خطا در بارگذاری دارایی‌های کاربر"))
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(isLoading = false, error = result.exception.message)
                     }
+                    _effect.send(UserAssetEffect.ShowError(result.exception.message ?: "خطا در بارگذاری دارایی‌های کاربر"))
                 }
             }
         }

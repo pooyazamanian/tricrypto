@@ -41,117 +41,122 @@ fun ProfilePage(
     val state by profileViewModel.state.collectAsState()
     val scrollState = rememberScrollState()
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+    GlassPullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { profileViewModel.refreshData() }
     ) {
-        if (state.isLoading) {
-            ProfileShimmer()
-        } else {
-            // Profile Header Card
-            val headerAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
-            AnimatedVisibility(
-                visibleState = headerAnimState,
-                enter = fadeIn(animationSpec = tween(600)) + expandVertically(animationSpec = tween(600))
-            ) {
-                GlassCard(opacity = 0.15f) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.test),
-                            contentDescription = "profile",
-                            contentScale = ContentScale.Crop,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (state.isLoading && state.profile == null) {
+                ProfileShimmer()
+            } else {
+                // Profile Header Card
+                val headerAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                AnimatedVisibility(
+                    visibleState = headerAnimState,
+                    enter = fadeIn(animationSpec = tween(600)) + expandVertically(animationSpec = tween(600))
+                ) {
+                    GlassCard(opacity = 0.15f) {
+                        Row(
                             modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.1f))
-                        )
-                        Spacer(Modifier.width(20.dp))
-                        Column {
-                            Text(
-                                text = state.profile?.fullName ?: "نام کاربر",
-                                color = Color.White,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.test),
+                                contentDescription = "profile",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.1f))
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = state.user?.email ?: "ایمیل یافت نشد",
-                                color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                            Spacer(Modifier.width(20.dp))
+                            Column {
+                                Text(
+                                    text = state.profile?.fullName ?: "نام کاربر",
+                                    color = Color.White,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = state.user?.email ?: "ایمیل یافت نشد",
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                // Personal Info Card
+                val infoAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                AnimatedVisibility(
+                    visibleState = infoAnimState,
+                    enter = fadeIn(animationSpec = tween(600, delayMillis = 200)) + slideInVertically(animationSpec = tween(600, delayMillis = 200)) { it / 2 }
+                ) {
+                    GlassCard(opacity = 0.12f) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            InfoRow(title = "نام کاربری", value = state.profile?.username ?: "-")
+                            Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+                            InfoRow(title = "شماره تلفن", value = state.user?.phone ?: "-")
+                            Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
+                            InfoRow(title = "کد ملی", value = state.profile?.nationalId ?: "-")
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(32.dp))
+
+                // Actions
+                if (state.profile != null && state.user != null) {
+                    val actionsAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                    AnimatedVisibility(
+                        visibleState = actionsAnimState,
+                        enter = fadeIn(animationSpec = tween(600, delayMillis = 400))
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            GlassButton(
+                                text = "ویرایش پروفایل",
+                                onClick = {
+                                    val profileJson = Json.encodeToString(state.profile)
+                                    val profile = URLEncoder.encode(profileJson, StandardCharsets.UTF_8.toString())
+                                    val userJson = Json.encodeToString(state.user)
+                                    val user = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+                                    navigation.navigate("${NamePage.PROFILE_EDITOR}/${profile}/${user}")
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            GlassButton(
+                                text = "خروج از حساب",
+                                onClick = { profileViewModel.logout() },
+                                containerColor = Color.White.copy(alpha = 0.1f),
+                                contentColor = Color(0xFFE94560)
                             )
                         }
                     }
                 }
             }
-
-            Spacer(Modifier.height(20.dp))
-
-            // Personal Info Card
-            val infoAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
-            AnimatedVisibility(
-                visibleState = infoAnimState,
-                enter = fadeIn(animationSpec = tween(600, delayMillis = 200)) + slideInVertically(animationSpec = tween(600, delayMillis = 200)) { it / 2 }
-            ) {
-                GlassCard(opacity = 0.12f) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        InfoRow(title = "نام کاربری", value = state.profile?.username ?: "-")
-                        Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
-                        InfoRow(title = "شماره تلفن", value = state.user?.phone ?: "-")
-                        Divider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 12.dp))
-                        InfoRow(title = "کد ملی", value = state.profile?.nationalId ?: "-")
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
-
-            // Actions
-            if (state.profile != null && state.user != null) {
-                val actionsAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
-                AnimatedVisibility(
-                    visibleState = actionsAnimState,
-                    enter = fadeIn(animationSpec = tween(600, delayMillis = 400))
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        GlassButton(
-                            text = "ویرایش پروفایل",
-                            onClick = {
-                                val profileJson = Json.encodeToString(state.profile)
-                                val profile = URLEncoder.encode(profileJson, StandardCharsets.UTF_8.toString())
-                                val userJson = Json.encodeToString(state.user)
-                                val user = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
-                                navigation.navigate("${NamePage.PROFILE_EDITOR}/${profile}/${user}")
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        GlassButton(
-                            text = "خروج از حساب",
-                            onClick = { profileViewModel.logout() },
-                            containerColor = Color.White.copy(alpha = 0.1f),
-                            contentColor = Color(0xFFE94560)
-                        )
-                    }
-                }
-            }
+            
+            Spacer(modifier = Modifier.height(120.dp))
         }
-        
-        Spacer(modifier = Modifier.height(120.dp))
     }
 }
 

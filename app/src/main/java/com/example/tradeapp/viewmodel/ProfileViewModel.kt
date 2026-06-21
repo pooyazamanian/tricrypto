@@ -51,43 +51,60 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun refreshData() {
+        viewModelScope.launch {
+            _state.update { it.copy(isRefreshing = true) }
+            fetchUser()
+            fetchProfile()
+            _state.update { it.copy(isRefreshing = false) }
+        }
+    }
+
     private fun loadUser() {
         viewModelScope.launch {
-            val user = sessionManager.getCurrentUser()
-
-             if (user != null) {
-                 _state.update {
-                     it.copy(
-                         user = user,
-                         error = null
-                     )
-                 }
-            } else {
-                 _state.update {
-                     it.copy(
-                         error = "دیتا سمت سرور دریافت نشد"
-                     )
-                 }
-            }
+            fetchUser()
         }
     }
 
     private fun loadProfile() {
         viewModelScope.launch {
-            userId?.let { id ->
-                when (val result = getProfileUseCase(id)) {
-                    is Result.Success -> {
-                        _state.update {
-                            it.copy(
-                                profile = result.data,
-                                error = null
-                            )
-                        }
+            fetchProfile()
+        }
+    }
+
+    private suspend fun fetchUser() {
+        val user = sessionManager.getCurrentUser()
+
+        if (user != null) {
+            _state.update {
+                it.copy(
+                    user = user,
+                    error = null
+                )
+            }
+        } else {
+            _state.update {
+                it.copy(
+                    error = "دیتا سمت سرور دریافت نشد"
+                )
+            }
+        }
+    }
+
+    private suspend fun fetchProfile() {
+        userId?.let { id ->
+            when (val result = getProfileUseCase(id)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            profile = result.data,
+                            error = null
+                        )
                     }
-                    is Result.Error -> {
-                        _state.update {
-                            it.copy(error = result.exception.message)
-                        }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(error = result.exception.message)
                     }
                 }
             }

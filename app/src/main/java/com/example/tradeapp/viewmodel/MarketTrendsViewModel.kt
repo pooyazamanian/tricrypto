@@ -44,47 +44,59 @@ class MarketTrendsViewModel @Inject constructor(
         }
     }
 
+    fun refreshData() {
+        viewModelScope.launch {
+            _state.update { it.copy(isRefreshing = true) }
+            fetchTrends()
+            _state.update { it.copy(isRefreshing = false) }
+        }
+    }
+
     private fun loadData() {
         viewModelScope.launch {
-            // گرفتن دیتای قبلی برای نمایش در حین لودینگ
-            val currentData = _state.value.trendsData.dataOrCached() ?: emptyList()
+            fetchTrends()
+        }
+    }
 
-            _state.update {
-                it.copy(trendsData = UiStateWithCatch.Loading(cachedData = currentData))
-            }
+    private suspend fun fetchTrends() {
+        // گرفتن دیتای قبلی برای نمایش در حین لودینگ
+        val currentData = _state.value.trendsData.dataOrCached() ?: emptyList()
 
-            when (val result = getMarketTrendUseCase()) {
-                is Result.Success -> {
-                    val trends = result.data
-                    val symbols = trends
-                        .mapNotNull { it.asset?.symbol }
-                        .map { "${it}-USDT" } // تبدیل به فرمت سیمبل‌های صرافی
+        _state.update {
+            it.copy(trendsData = UiStateWithCatch.Loading(cachedData = currentData))
+        }
 
-                    // دیتای جدید با موفقیت دریافت شد
-                    _state.update {
-                        it.copy(trendsData = UiStateWithCatch.Success(trends))
-                    }
+        when (val result = getMarketTrendUseCase()) {
+            is Result.Success -> {
+                val trends = result.data
+                val symbols = trends
+                    .mapNotNull { it.asset?.symbol }
+                    .map { "${it}-USDT" } // تبدیل به فرمت سیمبل‌های صرافی
 
-                    // استریم قیمت‌ها رو برای این ارزها استارت می‌زنیم
-                    if (symbols.isNotEmpty()) {
-                        observePrices(symbols)
-                    }
+                // دیتای جدید با موفقیت دریافت شد
+                _state.update {
+                    it.copy(trendsData = UiStateWithCatch.Success(trends))
                 }
 
-                is Result.Error -> {
-                    // در صورت ارور، دیتای کش شده رو نگه می‌داریم و ارور رو ست می‌کنیم
-                    _state.update {
-                        it.copy(
-                            trendsData = UiStateWithCatch.Error(
-                                message = result.exception.message,
-                                cachedData = currentData
-                            )
+                // استریم قیمت‌ها رو برای این ارزها استارت می‌زنیم
+                if (symbols.isNotEmpty()) {
+                    observePrices(symbols)
+                }
+            }
+
+            is Result.Error -> {
+                // در صورت ارور، دیتای کش شده رو نگه می‌داریم و ارور رو ست می‌کنیم
+                _state.update {
+                    it.copy(
+                        trendsData = UiStateWithCatch.Error(
+                            message = result.exception.message,
+                            cachedData = currentData
                         )
-                    }
+                    )
                 }
-
-                else -> Unit
             }
+
+            else -> Unit
         }
     }
 

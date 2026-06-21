@@ -60,56 +60,71 @@ fun WalletPage(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
+    GlassPullToRefreshBox(
+        isRefreshing = userAssetState.isRefreshing,
+        onRefresh = { 
+            userAssetViewModel.refreshData()
+            assetViewModel.handleIntent(AssetIntent.LoadAssets)
+            marketTrendsViewModel.refreshData()
+        }
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            item {
-                WalletHeader(totalBalanceUsd)
-            }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    WalletHeader(totalBalanceUsd)
+                }
 
-            item {
-                PortfolioBreakdown(userAssetState.userAssets, trends)
-            }
+                item {
+                    PortfolioBreakdown(userAssetState.userAssets, trends)
+                }
 
-            item {
-                Text(
-                    text = "دارایی‌های شما",
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-
-            itemsIndexed(userAssetState.userAssets) { index, userAsset ->
-                val assetInfo = assetState.assets.find { it.id == userAsset.assetId }
-                val trend = trends?.find { it.asset?.id == userAsset.assetId }
-                
-                val animState = remember { MutableTransitionState(false).apply { targetState = true } }
-                AnimatedVisibility(
-                    visibleState = animState,
-                    enter = fadeIn(animationSpec = tween(300, delayMillis = index * 50)) + 
-                            slideInVertically(animationSpec = tween(300, delayMillis = index * 50)) { it / 2 }
-                ) {
-                    AssetWalletCard(
-                        name = assetInfo?.name ?: "نامشخص",
-                        symbol = assetInfo?.symbol ?: "",
-                        amount = userAsset.quantity ?: 0.0,
-                        price = trend?.price ?: 0.0,
-                        logoUrl = assetInfo?.logoUrl,
-                        onClick = { 
-                            assetInfo?.id?.let { id ->
-                                navigation.navigate("chart/$id")
-                            }
-                        }
+                item {
+                    Text(
+                        text = "دارایی‌های شما",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
+                }
+
+                if (userAssetState.isLoading && userAssetState.userAssets.isEmpty()) {
+                    items(4) {
+                        GlassShimmer(modifier = Modifier.fillMaxWidth().height(80.dp))
+                    }
+                } else {
+                    itemsIndexed(userAssetState.userAssets) { index, userAsset ->
+                        val assetInfo = assetState.assets.find { it.id == userAsset.assetId }
+                        val trend = trends?.find { it.asset?.id == userAsset.assetId }
+                        
+                        val animState = remember { MutableTransitionState(false).apply { targetState = true } }
+                        AnimatedVisibility(
+                            visibleState = animState,
+                            enter = fadeIn(animationSpec = tween(300, delayMillis = index * 50)) + 
+                                    slideInVertically(animationSpec = tween(300, delayMillis = index * 50)) { it / 2 }
+                        ) {
+                            AssetWalletCard(
+                                name = assetInfo?.name ?: "نامشخص",
+                                symbol = assetInfo?.symbol ?: "",
+                                amount = userAsset.quantity ?: 0.0,
+                                price = trend?.price ?: 0.0,
+                                logoUrl = assetInfo?.logoUrl,
+                                onClick = { 
+                                    assetInfo?.id?.let { id ->
+                                        navigation.navigate("chart/$id")
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

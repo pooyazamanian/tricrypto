@@ -7,6 +7,7 @@ import io.github.jan.supabase.auth.user.UserInfo
 
 data class ProfileState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val profile: Profile? = null,
     val user: UserInfo? = null,
     val error: String? = null

@@ -55,53 +55,65 @@ class WatchlistViewModel @Inject constructor(
         }
     }
 
+    fun refreshData() {
+        viewModelScope.launch {
+            _state.update { it.copy(isRefreshing = true) }
+            fetchWatchlist()
+            _state.update { it.copy(isRefreshing = false) }
+        }
+    }
+
     private fun load() {
         viewModelScope.launch {
-            Log.d(TAG, "Loading watchlist API...")
+            fetchWatchlist()
+        }
+    }
 
-            // گرفتن دیتای فعلی (یا کش شده) تا موقع لودینگ صفحه سفید نشه
-            val currentData = _state.value.watchlistData.dataOrCached() ?: emptyList()
+    private suspend fun fetchWatchlist() {
+        Log.d(TAG, "Loading watchlist API...")
 
-            // رفتن به حالت لودینگ همراه با نگه داشتن دیتای کش شده
-            _state.update {
-                it.copy(watchlistData = UiStateWithCatch.Loading(cachedData = currentData))
-            }
+        // گرفتن دیتای فعلی (یا کش شده) تا موقع لودینگ صفحه سفید نشه
+        val currentData = _state.value.watchlistData.dataOrCached() ?: emptyList()
 
-            when (val res = getWatchlistUseCase()) {
-                is Result.Success -> {
-                    val data = res.data
-                    val symbols = data.map { "${it.symbol}-USDT" }
+        // رفتن به حالت لودینگ همراه با نگه داشتن دیتای کش شده
+        _state.update {
+            it.copy(watchlistData = UiStateWithCatch.Loading(cachedData = currentData))
+        }
 
-                    Log.d(TAG, "Watchlist loaded: ${data.size}")
+        when (val res = getWatchlistUseCase()) {
+            is Result.Success -> {
+                val data = res.data
+                val symbols = data.map { "${it.symbol}-USDT" }
 
-                    // موفقیت! دیتای جدید رو به عنوان Success جایگزین می‌کنیم
-                    _state.update {
-                        it.copy(watchlistData = UiStateWithCatch.Success(data))
-                    }
+                Log.d(TAG, "Watchlist loaded: ${data.size}")
 
-                    // حالا که واچ‌لیست اومد، استریم قیمت‌ها رو استارت می‌زنیم
-                    onIntent(WatchlistIntent.RefreshPrices(symbols))
+                // موفقیت! دیتای جدید رو به عنوان Success جایگزین می‌کنیم
+                _state.update {
+                    it.copy(watchlistData = UiStateWithCatch.Success(data))
                 }
 
-                is Result.Error -> {
-                    Log.e(TAG, "Watchlist error: ${res.exception.message}")
+                // حالا که واچ‌لیست اومد، استریم قیمت‌ها رو استارت می‌زنیم
+                onIntent(WatchlistIntent.RefreshPrices(symbols))
+            }
 
-                    // ارور! اما دیتای کش شده رو پاس می‌دیم تا کاربر همچنان لیست رو ببینه
-                    _state.update {
-                        it.copy(
-                            watchlistData = UiStateWithCatch.Error(
-                                message = res.exception.message,
-                                cachedData = currentData
-                            )
+            is Result.Error -> {
+                Log.e(TAG, "Watchlist error: ${res.exception.message}")
+
+                // ارور! اما دیتای کش شده رو پاس می‌دیم تا کاربر همچنان لیست رو ببینه
+                _state.update {
+                    it.copy(
+                        watchlistData = UiStateWithCatch.Error(
+                            message = res.exception.message,
+                            cachedData = currentData
                         )
-                    }
-
-                    _effect.emit(
-                        WatchlistEffect.ShowError(res.exception.message ?: "Unknown error")
                     )
                 }
-                else -> Unit
+
+                _effect.emit(
+                    WatchlistEffect.ShowError(res.exception.message ?: "Unknown error")
+                )
             }
+            else -> Unit
         }
     }
 

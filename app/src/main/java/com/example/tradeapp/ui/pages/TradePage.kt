@@ -1,6 +1,8 @@
 package com.example.tradeapp.ui.pages
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,14 +13,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -30,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.tradeapp.R
 import com.example.tradeapp.ui.components.*
+import com.example.tradeapp.utils.NamePage
 import com.example.tradeapp.viewmodel.MarketTrendsViewModel
 import com.example.tradeapp.viewmodel.OrderViewModel
 import com.example.tradeapp.viewmodel.TradeListViewModel
@@ -37,11 +41,6 @@ import com.example.tradeapp.viewmodel.intent.OrderIntent
 import com.example.tradeapp.viewmodel.intent.TradeListIntent
 import com.example.tradeapp.viewmodel.state.OrderType
 import com.example.tradeapp.viewmodel.util.dataOrCached
-
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.tween
 
 @Composable
 fun TradePage(
@@ -61,78 +60,87 @@ fun TradePage(
         orderViewModel.handleIntent(OrderIntent.LoadOrders)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
+    GlassPullToRefreshBox(
+        isRefreshing = tradeState.isRefreshing,
+        onRefresh = { 
+            tradeViewModel.refreshData()
+            orderViewModel.handleIntent(OrderIntent.LoadOrders)
+            marketTrendsViewModel.refreshData()
+        }
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            // Market Pairs Section
-            item {
-                SectionHeader("بازارها", Icons.AutoMirrored.Filled.KeyboardArrowRight)
-                Spacer(modifier = Modifier.height(12.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    trends?.let { list ->
-                        items(list) { trend ->
-                            MarketPairCard(
-                                symbol = trend.asset?.symbol ?: "",
-                                price = trend.price ?: 0.0,
-                                change = 2.45, // Mock change
-                                onClick = { navigation.navigate("chart/${trend.asset?.id}") }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Open Orders Section
-            item {
-                SectionHeader("سفارشات باز", painterResource(R.drawable.trade_s))
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                val openOrders = orderState.orders
-                if (openOrders.isEmpty()) {
-                    EmptyStateCard("سفارش بازی ندارید")
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        openOrders.forEachIndexed { index, order ->
-                            val animState = remember { MutableTransitionState(false).apply { targetState = true } }
-                            AnimatedVisibility(
-                                visibleState = animState,
-                                enter = fadeIn(animationSpec = tween(400, delayMillis = index * 100)) + 
-                                        expandVertically(animationSpec = tween(400, delayMillis = index * 100))
-                            ) {
-                                OrderCard(order)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                // Market Pairs Section
+                item {
+                    SectionHeader("بازارها", Icons.AutoMirrored.Filled.KeyboardArrowRight)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        trends?.let { list ->
+                            items(list) { trend ->
+                                MarketPairCard(
+                                    symbol = trend.asset?.symbol ?: "",
+                                    price = trend.price ?: 0.0,
+                                    change = 2.45, // Mock change
+                                    onClick = { navigation.navigate("chart/${trend.asset?.id}") }
+                                )
                             }
                         }
                     }
                 }
-            }
 
-            // Recent Trades Section
-            item {
-                SectionHeader("تاریخچه معاملات اخیر", Icons.Default.Info)
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                val trades = tradeState.trades
-                if (trades.isEmpty()) {
-                    EmptyStateCard("معامله‌ای ثبت نشده است")
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        trades.take(5).forEachIndexed { index, trade ->
-                            val animState = remember { MutableTransitionState(false).apply { targetState = true } }
-                            AnimatedVisibility(
-                                visibleState = animState,
-                                enter = fadeIn(animationSpec = tween(400, delayMillis = (index + 3) * 100))
-                            ) {
-                                RecentTradeCard(trade)
+                // Open Orders Section
+                item {
+                    SectionHeader("سفارشات باز", painterResource(R.drawable.trade_s))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    val openOrders = orderState.orders
+                    if (openOrders.isEmpty()) {
+                        EmptyStateCard("سفارش بازی ندارید")
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            openOrders.forEachIndexed { index, order ->
+                                val animState = remember { MutableTransitionState(false).apply { targetState = true } }
+                                AnimatedVisibility(
+                                    visibleState = animState,
+                                    enter = fadeIn(animationSpec = tween(400, delayMillis = index * 100)) + 
+                                            expandVertically(animationSpec = tween(400, delayMillis = index * 100))
+                                ) {
+                                    OrderCard(order)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Recent Trades Section
+                item {
+                    SectionHeader("تاریخچه معاملات اخیر", Icons.Default.Info)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    val trades = tradeState.trades
+                    if (trades.isEmpty()) {
+                        EmptyStateCard("معامله‌ای ثبت نشده است")
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            trades.take(5).forEachIndexed { index, trade ->
+                                val animState = remember { MutableTransitionState(false).apply { targetState = true } }
+                                AnimatedVisibility(
+                                    visibleState = animState,
+                                    enter = fadeIn(animationSpec = tween(400, delayMillis = (index + 3) * 100))
+                                ) {
+                                    RecentTradeCard(trade)
+                                }
                             }
                         }
                     }

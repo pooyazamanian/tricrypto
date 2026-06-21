@@ -55,172 +55,179 @@ fun HomePage(
     
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.End
+    GlassPullToRefreshBox(
+        isRefreshing = watchlistState.isRefreshing,
+        onRefresh = { 
+            watchlistViewModel.refreshData()
+            marketTrendsViewModel.refreshData()
+        }
     ) {
-        // Balance Section - Entrance Animation
-        val balanceAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
-        AnimatedVisibility(
-            visibleState = balanceAnimState,
-            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(animationSpec = tween(600)) { it / 2 }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.End
         ) {
-            GlassCard(opacity = 0.15f) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "حساب شما",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            // Balance Section - Entrance Animation
+            val balanceAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+            AnimatedVisibility(
+                visibleState = balanceAnimState,
+                enter = fadeIn(animationSpec = tween(600)) + slideInVertically(animationSpec = tween(600)) { it / 2 }
+            ) {
+                GlassCard(opacity = 0.15f) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
-                            text = "1,000,000,000",
-                            color = Color.White,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "تومان",
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 18.sp,
+                            text = "حساب شما",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = Color(0xFF4CAF50),
-                            modifier = Modifier.size(16.dp).rotate(90f)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "5,000 (100%)",
-                            color = Color(0xFF4CAF50),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "1,000,000,000",
+                                color = Color.White,
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "تومان",
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(16.dp).rotate(90f)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "5,000 (100%)",
+                                color = Color(0xFF4CAF50),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Action Buttons
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            GlassButton(
-                text = "برداشت",
-                onClick = { },
-                modifier = Modifier.weight(1f),
-                containerColor = Color.White.copy(alpha = 0.1f),
-                contentColor = Color.White
-            )
-            GlassButton(
-                text = "پرداخت",
-                onClick = { },
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Market Trends
-        Text(
-            text = "ترند های امروز:",
-            color = Color.White,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        
-        if (isLoadingMarketTrends && trends.isNullOrEmpty()) {
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(5) {
-                    GlassShimmer(modifier = Modifier.width(140.dp).height(120.dp))
-                }
+            // Action Buttons
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                GlassButton(
+                    text = "برداشت",
+                    onClick = { },
+                    modifier = Modifier.weight(1f),
+                    containerColor = Color.White.copy(alpha = 0.1f),
+                    contentColor = Color.White
+                )
+                GlassButton(
+                    text = "پرداخت",
+                    onClick = { },
+                    modifier = Modifier.weight(1f)
+                )
             }
-        } else {
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                trends?.let { list ->
-                    itemsIndexed(list) { index, trend ->
-                        val itemAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
-                        AnimatedVisibility(
-                            visibleState = itemAnimState,
-                            enter = fadeIn(animationSpec = tween(400, delayMillis = index * 100)) +
-                                    slideInHorizontally(animationSpec = tween(400, delayMillis = index * 100)) { it / 2 }
-                        ) {
-                            TrendCard(
-                                name = trend.asset?.name ?: "",
-                                symbol = trend.asset?.symbol ?: "",
-                                price = trend.price.toString()
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Market Trends
+            Text(
+                text = "ترند های امروز:",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            if (isLoadingMarketTrends && trends.isNullOrEmpty()) {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(5) {
+                        GlassShimmer(modifier = Modifier.width(140.dp).height(120.dp))
+                    }
+                }
+            } else {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    trends?.let { list ->
+                        itemsIndexed(list) { index, trend ->
+                            val itemAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                            AnimatedVisibility(
+                                visibleState = itemAnimState,
+                                enter = fadeIn(animationSpec = tween(400, delayMillis = index * 100)) +
+                                        slideInHorizontally(animationSpec = tween(400, delayMillis = index * 100)) { it / 2 }
                             ) {
-                                navigation.navigate("${NamePage.CHART}/${trend.asset?.id}")
+                                TrendCard(
+                                    name = trend.asset?.name ?: "",
+                                    symbol = trend.asset?.symbol ?: "",
+                                    price = trend.price.toString()
+                                ) {
+                                    navigation.navigate("${NamePage.CHART}/${trend.asset?.id}")
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        // Watchlist
-        Text(
-            text = "فهرست پیگیری های من:",
-            color = Color.White,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+            // Watchlist
+            Text(
+                text = "فهرست پیگیری های من:",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        if (isLoadingWatchlist && assetsWatchlist.isNullOrEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                repeat(4) {
-                    GlassShimmer(modifier = Modifier.fillMaxWidth().height(80.dp))
-                }
-            }
-        } else {
-            assetsWatchlist?.forEachIndexed { index, item ->
-                val itemAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
-                AnimatedVisibility(
-                    visibleState = itemAnimState,
-                    enter = fadeIn(animationSpec = tween(400, delayMillis = (index + 2) * 100)) +
-                            slideInVertically(animationSpec = tween(400, delayMillis = (index + 2) * 100)) { it / 2 }
-                ) {
-                    WatchlistItemCard(
-                        name = item.name,
-                        symbol = item.symbol,
-                        price = item.price.toString(),
-                        logoUrl = item.logoUrl
-                    ) {
-                        navigation.navigate("${NamePage.CHART}/${item.id}")
+            if (isLoadingWatchlist && assetsWatchlist.isNullOrEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    repeat(4) {
+                        GlassShimmer(modifier = Modifier.fillMaxWidth().height(80.dp))
                     }
-
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+            } else {
+                assetsWatchlist?.forEachIndexed { index, item ->
+                    val itemAnimState = remember { MutableTransitionState(false).apply { targetState = true } }
+                    AnimatedVisibility(
+                        visibleState = itemAnimState,
+                        enter = fadeIn(animationSpec = tween(400, delayMillis = (index + 2) * 100)) +
+                                slideInVertically(animationSpec = tween(400, delayMillis = (index + 2) * 100)) { it / 2 }
+                    ) {
+                        WatchlistItemCard(
+                            name = item.name,
+                            symbol = item.symbol,
+                            price = item.price.toString(),
+                            logoUrl = item.logoUrl
+                        ) {
+                            navigation.navigate("${NamePage.CHART}/${item.id}")
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
+            
+            Spacer(modifier = Modifier.height(120.dp))
         }
-        
-        Spacer(modifier = Modifier.height(120.dp))
     }
 }
 

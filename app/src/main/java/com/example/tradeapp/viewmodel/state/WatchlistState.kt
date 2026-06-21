@@ -5,4 +5,5 @@ import com.example.tradeapp.viewmodel.util.UiStateWithCatch
 
 data class WatchlistState(
     val watchlistData: UiStateWithCatch<List<UserWatchlist>> = UiStateWithCatch.Idle,
+    val isRefreshing: Boolean = false
 )
